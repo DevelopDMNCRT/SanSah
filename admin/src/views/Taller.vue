@@ -231,16 +231,20 @@
               </template>
             </div>
             
-            <div class="flex justify-between items-center pt-2">
+            <div class="flex justify-between items-center pt-2 border-b border-gray-100 dark:border-gray-800 pb-3 mb-3">
               <span class="text-sm font-bold text-gray-800 dark:text-gray-200">Total Estimado</span>
               <span class="text-xl font-black text-brand-600 dark:text-brand-400">
                 ${{ (Number(ordenSeleccionada?.costo || 0) + (ordenSeleccionada?.piezas || []).reduce((acc, p) => acc + Number(p.precio || 0), 0)).toFixed(2) }}
               </span>
             </div>
             
-            <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-              Al confirmar, la orden se cerrará y se enviará al POS para cobrar.
-            </p>
+            <div v-if="ordenSeleccionada?.descripcion" class="bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-100 dark:border-yellow-500/20 rounded-xl p-3 shadow-sm">
+              <p class="text-[11px] font-black text-yellow-800 dark:text-yellow-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                Notas de la Orden
+              </p>
+              <p class="text-[13px] text-yellow-900 dark:text-yellow-200 whitespace-pre-wrap leading-snug">{{ ordenSeleccionada.descripcion }}</p>
+            </div>
           </div>
 
           <div class="flex items-center gap-3 w-full mt-5">
