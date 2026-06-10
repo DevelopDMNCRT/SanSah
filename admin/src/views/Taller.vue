@@ -400,7 +400,7 @@
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Añadir Refacciones:</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Añadir Refacciones y Servicios:</label>
               <div class="relative flex gap-2 mb-3">
                 <div class="flex-1 relative">
                   <input 
@@ -409,7 +409,7 @@
                     @blur="hideRefaccionesDropdown" 
                     type="text" 
                     class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm" 
-                    placeholder="Escribe para buscar una refacción..."
+                    placeholder="Escribe para buscar (Ej. Cámara, Mantenimiento...)"
                   >
                   <ul 
                     v-if="showRefaccionesDropdown && refaccionesBuscadas.length > 0" 
@@ -477,7 +477,10 @@ const serviciosList = computed(() => {
   return productosList.value.filter(p => (p.tienda || '').toLowerCase() === 'servicios');
 });
 const refaccionesList = computed(() => {
-  return productosList.value.filter(p => (p.tienda || '').toLowerCase() === 'refacciones');
+  return productosList.value.filter(p => {
+    const t = (p.tienda || '').toLowerCase();
+    return t === 'refacciones' || t === 'servicios';
+  });
 });
 const fetchProductos = async () => {
   try {
