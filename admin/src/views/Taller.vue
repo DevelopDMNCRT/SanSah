@@ -197,23 +197,58 @@
       </div>
     </div>
 
-    <!-- Modal de Confirmación -->
+    <!-- Modal de Confirmación (Resumen de Entrega) -->
     <Modal v-if="showModal" :fullScreenBackdrop="true" @close="cancelarEntrega">
       <template #body>
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-xl border border-gray-100 dark:border-gray-700 text-center">
-          <div class="w-16 h-16 rounded-full bg-success-100 dark:bg-success-900/30 flex items-center justify-center mx-auto mb-4 text-success-500">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-md shadow-xl border border-gray-100 dark:border-gray-700">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">Resumen de Orden</h2>
+            <button @click="cancelarEntrega" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
-          <h2 class="text-xl font-bold text-gray-800 dark:text-white/90 mb-2">¿Marcar como Entregado?</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-            Vas a finalizar la orden <strong class="text-gray-800 dark:text-gray-200">{{ ordenSeleccionada?.numero }}</strong> de <strong class="text-gray-800 dark:text-gray-200">{{ ordenSeleccionada?.cliente }}</strong>. Esta acción la quitará del tablero Kanban.
-          </p>
-          <div class="flex items-center gap-3 w-full">
+          
+          <div class="space-y-4 text-left">
+            <div>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Cliente</p>
+              <p class="text-base font-bold text-gray-900 dark:text-white">{{ ordenSeleccionada?.cliente }} <span v-if="ordenSeleccionada?.bicicleta">- {{ ordenSeleccionada.bicicleta }}</span></p>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-100 dark:border-gray-700">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-[13px] font-bold text-gray-700 dark:text-gray-200">{{ ordenSeleccionada?.servicio || 'Servicio General' }}</span>
+                <span class="text-[13px] font-bold text-gray-900 dark:text-white">${{ Number(ordenSeleccionada?.costo || 0).toFixed(2) }}</span>
+              </div>
+              
+              <template v-if="ordenSeleccionada?.piezas?.length > 0">
+                <div class="border-t border-gray-200 dark:border-gray-700 my-2 pt-2 space-y-1.5">
+                  <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Refacciones y Extras</p>
+                  <div v-for="(pieza, index) in ordenSeleccionada.piezas" :key="index" class="flex justify-between items-center">
+                    <span class="text-[13px] text-gray-600 dark:text-gray-400">- {{ pieza.nombre }}</span>
+                    <span class="text-[13px] font-medium text-gray-800 dark:text-gray-300">${{ Number(pieza.precio || 0).toFixed(2) }}</span>
+                  </div>
+                </div>
+              </template>
+            </div>
+            
+            <div class="flex justify-between items-center pt-2">
+              <span class="text-sm font-bold text-gray-800 dark:text-gray-200">Total Estimado</span>
+              <span class="text-xl font-black text-brand-600 dark:text-brand-400">
+                ${{ (Number(ordenSeleccionada?.costo || 0) + (ordenSeleccionada?.piezas || []).reduce((acc, p) => acc + Number(p.precio || 0), 0)).toFixed(2) }}
+              </span>
+            </div>
+            
+            <p class="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+              Al confirmar, la orden se cerrará y se enviará al POS para cobrar.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3 w-full mt-5">
             <button @click="cancelarEntrega" class="flex-1 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               Cancelar
             </button>
-            <button @click="confirmarEntrega" class="flex-1 py-2.5 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition-colors">
-              Confirmar
+            <button @click="confirmarEntrega" class="flex-1 py-2.5 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 transition-colors shadow-sm flex items-center justify-center gap-2">
+              Mandar al POS y Entregar
             </button>
           </div>
         </div>
