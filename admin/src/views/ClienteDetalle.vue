@@ -191,7 +191,7 @@ function fmtFecha(iso) {
 onMounted(async () => {
   try {
     const correo = decodeURIComponent(route.params.id)
-    const res = await fetch(`/api/clientes/${encodeURIComponent(correo)}`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/clientes/${encodeURIComponent(correo)}`)
     if (!res.ok) throw new Error()
     pedidos.value = await res.json()   // array ordenado desc por created_at
   } catch {

@@ -459,7 +459,7 @@ const slug = computed(() => {
 
 onMounted(async () => {
   try {
-    const tiendasRes = await axios.get('/api/tiendas');
+    const tiendasRes = await axios.get((import.meta.env.VITE_API_URL || '') + '/api/tiendas');
     tiendasList.value = tiendasRes.data;
   } catch (err) {
     console.error('Error fetching tiendas for selector:', err);
@@ -467,7 +467,7 @@ onMounted(async () => {
 
   if (isEditing.value) {
     try {
-      const { data } = await axios.get(`/api/products/${route.params.id}`);
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/products/${route.params.id}`);
       form.nombre = data.nombre;
       form.descripcion = data.descripcion || '';
       form.tienda = data.tienda || 'General';
@@ -784,9 +784,9 @@ const guardar = async () => {
     });
 
     if (isEditing.value) {
-      await axios.put(`/api/products/${route.params.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/products/${route.params.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
     } else {
-      await axios.post('/api/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await axios.post((import.meta.env.VITE_API_URL || '') + '/api/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
     }
 
     router.push('/productos');

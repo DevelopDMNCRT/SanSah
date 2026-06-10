@@ -144,7 +144,7 @@ const estadoColor = (e) => ({ Enviado: 'success', Borrador: 'light', Programado:
 const cargar = async () => {
   loading.value = true; errorMsg.value = '';
   try {
-    const res = await fetch('/api/boletines');
+    const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/boletines');
     if (!res.ok) throw new Error('Error al cargar boletines');
     boletines.value = await res.json();
   } catch (err) {
@@ -173,7 +173,7 @@ const stats = computed(() => [
 const eliminar = async (id) => {
   if (!confirm('¿Eliminar este boletín permanentemente?')) return;
   try {
-    const res = await fetch(`/api/boletines/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/boletines/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error();
     boletines.value = boletines.value.filter(b => b.id !== id);
   } catch {

@@ -105,7 +105,7 @@ const loading = ref(true);
 const fetchTiendas = async () => {
   loading.value = true;
   try {
-    const res = await axios.get('/api/tiendas');
+    const res = await axios.get((import.meta.env.VITE_API_URL || '') + '/api/tiendas');
     tiendas.value = res.data;
   } catch (err) {
     console.error('Error fetching tiendas:', err);
@@ -126,7 +126,7 @@ const formatDate = (dateStr) => {
 const eliminar = async (t) => {
   if (!confirm(`¿Estás seguro de eliminar la categoría "${t.nombre}"?`)) return;
   try {
-    await axios.delete(`/api/tiendas/${t.id}`);
+    await axios.delete(`${import.meta.env.VITE_API_URL || ''}/api/tiendas/${t.id}`);
     fetchTiendas();
   } catch (err) {
     console.error('Error al eliminar categoría:', err);

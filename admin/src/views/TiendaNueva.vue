@@ -235,7 +235,7 @@ const onDrop = async (e) => {
 onMounted(async () => {
   if (isEditing.value) {
     try {
-      const { data } = await axios.get(`/api/tiendas/${route.params.id}`);
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/tiendas/${route.params.id}`);
       form.nombre = data.nombre;
       form.publico = data.publico;
       if (data.imagen_url) form.imagenPreview = data.imagen_url;
@@ -262,9 +262,9 @@ const guardarTienda = async () => {
     if (form.imagen instanceof File) fd.append('imagen', form.imagen);
 
     if (isEditing.value) {
-      await axios.put(`/api/tiendas/${route.params.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/tiendas/${route.params.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
     } else {
-      await axios.post('/api/tiendas', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      await axios.post((import.meta.env.VITE_API_URL || '') + '/api/tiendas', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
     }
     router.push('/tiendas');
   } catch (err) {

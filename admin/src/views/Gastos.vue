@@ -170,7 +170,7 @@ const form = ref({ id: null, concepto: '', monto: '', categoria: '', fecha: '', 
 const fetchGastos = async () => {
   cargando.value = true;
   try {
-    const res = await axios.get('/api/gastos');
+    const res = await axios.get((import.meta.env.VITE_API_URL || '') + '/api/gastos');
     gastos.value = res.data;
   } catch (error) {
     console.error('Error fetching gastos:', error);
@@ -232,9 +232,9 @@ const saveGasto = async () => {
   guardando.value = true;
   try {
     if (isEditing.value) {
-      await axios.put(`/api/gastos/${form.value.id}`, form.value);
+      await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/gastos/${form.value.id}`, form.value);
     } else {
-      await axios.post('/api/gastos', form.value);
+      await axios.post((import.meta.env.VITE_API_URL || '') + '/api/gastos', form.value);
     }
     await fetchGastos();
     closeModal();
@@ -249,7 +249,7 @@ const saveGasto = async () => {
 const confirmDelete = async (gasto) => {
   if (confirm(`¿Seguro que deseas eliminar el gasto: "${gasto.concepto}"?`)) {
     try {
-      await axios.delete(`/api/gastos/${gasto.id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL || ''}/api/gastos/${gasto.id}`);
       await fetchGastos();
     } catch (error) {
       console.error('Error deleting gasto:', error);

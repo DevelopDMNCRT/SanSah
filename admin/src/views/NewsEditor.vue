@@ -313,7 +313,7 @@ const toggleTodos = () => {
 const cargarSuscriptores = async () => {
   cargandoSusc.value = true;
   try {
-    const res = await fetch('/api/suscriptores');
+    const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/suscriptores');
     if (res.ok) {
       suscriptores.value = await res.json();
       // Por defecto, seleccionar todos
@@ -472,7 +472,7 @@ const enviarAhora = async () => {
   enviando.value = true;
   // Pre-guardar el contenido actual
   try {
-    await fetch(`/api/boletines/${boletinId.value}`, {
+    await fetch(`${import.meta.env.VITE_API_URL || ''}/api/boletines/${boletinId.value}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asunto: asunto.value.trim(), html: editorEl.value.innerHTML }),
@@ -480,7 +480,7 @@ const enviarAhora = async () => {
   } catch { /* continuar */ }
   // Enviar con lista de destinatarios seleccionados
   try {
-    const res = await fetch(`/api/boletines/${boletinId.value}/enviar`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/boletines/${boletinId.value}/enviar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ destinatarios: seleccionados.value }),
@@ -512,13 +512,13 @@ const guardarBorrador = async () => {
   try {
     let res;
     if (isEditing.value) {
-      res = await fetch(`/api/boletines/${boletinId.value}`, {
+      res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/boletines/${boletinId.value}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
     } else {
-      res = await fetch('/api/boletines', {
+      res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/boletines', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -545,7 +545,7 @@ onMounted(async () => {
   const idParam = route.params.id;
   if (idParam && idParam !== 'nueva') {
     try {
-      const res = await fetch(`/api/boletines/${idParam}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/boletines/${idParam}`);
       if (res.ok) {
         const data = await res.json();
         boletinId.value   = data.id;

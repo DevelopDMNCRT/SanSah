@@ -126,7 +126,7 @@ const productos    = ref([]);
 const fetchProductos = async () => {
   loading.value = true;
   try {
-    const res = await axios.get('/api/products');
+    const res = await axios.get((import.meta.env.VITE_API_URL || '') + '/api/products');
     productos.value = res.data;
   } catch (err) {
     console.error('Error fetching data:', err);

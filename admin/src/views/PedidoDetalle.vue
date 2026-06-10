@@ -196,7 +196,7 @@ const estadoTriggerEmail = computed(() => EMAIL_STATES.has(estadoPendiente.value
 
 const fetchPedido = async () => {
   try {
-    const res = await fetch(`/api/pedidos/${route.params.id}`);
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/pedidos/${route.params.id}`);
     if (!res.ok) throw new Error('Pedido no encontrado');
     const data = await res.json();
     
@@ -239,7 +239,7 @@ const guardarEstado = async () => {
   if (estadoPendiente.value === pedido.value.estado) return;
   savingEstado.value = true;
   try {
-    const res = await fetch(`/api/pedidos/${pedido.value.id}/estado`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/pedidos/${pedido.value.id}/estado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ estado: estadoPendiente.value })

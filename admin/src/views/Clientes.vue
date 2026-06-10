@@ -97,7 +97,7 @@ const cargar = async () => {
   loading.value = true
   errorMsg.value = ''
   try {
-    const res = await fetch('/api/clientes')
+    const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/clientes')
     if (!res.ok) throw new Error('Error al cargar clientes')
     const data = await res.json()
     clientes.value = data.map((c, i) => ({

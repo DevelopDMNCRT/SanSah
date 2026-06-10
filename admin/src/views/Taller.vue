@@ -282,7 +282,7 @@ const router = useRouter();
 const productosList = ref([]);
 const fetchProductos = async () => {
   try {
-    const res = await fetch('/api/products');
+    const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/products');
     if (res.ok) productosList.value = await res.json();
   } catch (e) {
     console.error('Error al cargar productos:', e);
@@ -296,7 +296,7 @@ const loading = ref(true);
 const fetchOrdenes = async () => {
   loading.value = true;
   try {
-    const res = await fetch('/api/taller');
+    const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/taller');
     if (res.ok) ordenes.value = await res.json();
   } catch (e) {
     console.error('Error al cargar órdenes de taller:', e);
@@ -322,7 +322,7 @@ const moverA = async (orden, nuevoEstado) => {
   if (index !== -1) ordenes.value[index].estado = nuevoEstado;
 
   try {
-    const res = await fetch(`/api/taller/${orden.id}/estado`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/taller/${orden.id}/estado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ estado: nuevoEstado })
@@ -356,7 +356,7 @@ const confirmarEntrega = async () => {
 
   try {
     // Delete from DB since it's finished
-    const res = await fetch(`/api/taller/${orden.id}`, { method: 'DELETE' });
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/taller/${orden.id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error();
 
     // Guardar para que el POS lo lea
@@ -414,7 +414,7 @@ const guardarNuevoServicio = async () => {
   const minutos = ahora.getMinutes().toString().padStart(2, '0');
   
   try {
-    const res = await fetch('/api/taller', {
+    const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/taller', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

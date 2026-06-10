@@ -174,10 +174,10 @@ const tabs = [
 const fetchProductos = async () => {
   loading.value = true;
   try {
-    const res = await axios.get('/api/products');
+    const res = await axios.get((import.meta.env.VITE_API_URL || '') + '/api/products');
     productos.value = res.data;
     
-    const tiendasRes = await axios.get('/api/tiendas');
+    const tiendasRes = await axios.get((import.meta.env.VITE_API_URL || '') + '/api/tiendas');
     tiendasList.value = tiendasRes.data;
   } catch (err) {
     console.error('Error fetching data:', err);
@@ -209,7 +209,7 @@ const productosFiltrados = computed(() => {
 const eliminar = async (p) => {
   if (!confirm(`¿Eliminar "${p.nombre}"? Esta acción no se puede deshacer.`)) return;
   try {
-    await axios.delete(`/api/products/${p.id}`);
+    await axios.delete(`${import.meta.env.VITE_API_URL || ''}/api/products/${p.id}`);
     productos.value = productos.value.filter(x => x.id !== p.id);
   } catch (err) {
     console.error('Error deleting product:', err);

@@ -70,7 +70,7 @@ const loading = ref(true);
 
 const fetchPedidos = async () => {
   try {
-    const res = await fetch('/api/pedidos');
+    const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/pedidos');
     const data = await res.json();
     pedidos.value = data.map(p => {
       const d = new Date(p.created_at);

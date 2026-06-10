@@ -397,7 +397,7 @@ const productosFiltrados = computed(() => {
 // ── Fetch ──
 const fetchProductos = async () => {
   try {
-    const res = await axios.get('/api/products');
+    const res = await axios.get((import.meta.env.VITE_API_URL || '') + '/api/products');
     // Solo mostrar productos visibles en tienda/POS
     productos.value = res.data.filter((p: any) => p.es_publico_pos !== false);
   } catch (e) {

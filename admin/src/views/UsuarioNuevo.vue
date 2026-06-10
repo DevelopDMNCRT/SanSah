@@ -179,7 +179,7 @@ onMounted(async () => {
   if (!isEditing.value) return;
   loadingUser.value = true;
   try {
-    const res = await axios.get(`/api/users/${route.params.id}`);
+    const res = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/users/${route.params.id}`);
     form.nombre = res.data.nombre;
     form.correo = res.data.correo;
     form.rol    = res.data.rol;
@@ -214,9 +214,9 @@ const guardar = async () => {
       if (form.password.length > 0) {
         payload.password = form.password;
       }
-      await axios.put(`/api/users/${route.params.id}`, payload);
+      await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/users/${route.params.id}`, payload);
     } else {
-      await axios.post('/api/users', {
+      await axios.post((import.meta.env.VITE_API_URL || '') + '/api/users', {
         nombre:   form.nombre,
         correo:   form.correo,
         rol:      form.rol,

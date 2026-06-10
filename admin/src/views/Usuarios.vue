@@ -43,7 +43,7 @@ const loading = ref(true);
 
 const fetchUsuarios = async () => {
   try {
-    const response = await axios.get('/api/users');
+    const response = await axios.get((import.meta.env.VITE_API_URL || '') + '/api/users');
     // Mapear created_at a fecha para el componente tabla
     usuarios.value = response.data.map(u => ({
       ...u,
@@ -67,7 +67,7 @@ const onEditar  = (u) => router.push(`/usuarios/${u.id}/editar`);
 const onEliminar = async (u) => {
   if (confirm(`¿Eliminar a ${u.nombre}?`)) {
     try {
-      await axios.delete(`/api/users/${u.id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL || ''}/api/users/${u.id}`);
       usuarios.value = usuarios.value.filter(x => x.id !== u.id);
     } catch (err) {
       console.error('Error deleting user:', err);

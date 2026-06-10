@@ -98,7 +98,7 @@ const reporteData = ref({});
 // --- Fetch tiendas reales ---
 const fetchTiendas = async () => {
   try {
-    const res = await fetch('/api/tiendas');
+    const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/tiendas');
     if (res.ok) tiendas.value = await res.json();
   } catch (e) { console.error('Error fetching tiendas:', e); }
 };
@@ -110,7 +110,7 @@ const fetchData = async () => {
     const params = new URLSearchParams();
     if (selectedTienda.value !== 'todas') params.append('tienda_id', selectedTienda.value);
     
-    const res = await fetch(`/api/reportes/ventas?${params}`);
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/reportes/ventas?${params}`);
     if (res.ok) {
       reporteData.value = await res.json();
     }
