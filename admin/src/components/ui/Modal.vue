@@ -1,0 +1,24 @@
+<template>
+  <Teleport to="body">
+    <div class="fixed inset-0 flex items-center justify-center overflow-y-auto z-[99999]">
+      <div
+        v-if="fullScreenBackdrop"
+        class="fixed inset-0 h-full w-full bg-gray-900/40 backdrop-blur-sm"
+        aria-hidden="true"
+        @click="$emit('close')"
+      ></div>
+      <div class="relative z-50 w-full flex justify-center">
+        <slot name="body"></slot>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<script setup lang="ts">
+interface ModalProps {
+  fullScreenBackdrop?: boolean
+}
+
+defineProps<ModalProps>()
+defineEmits(['close'])
+</script>
