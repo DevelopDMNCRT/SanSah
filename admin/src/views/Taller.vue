@@ -362,16 +362,33 @@
             
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Añadir Refacciones:</label>
-              <div class="flex gap-2 mb-3">
-                <select v-model="refaccionSeleccionada" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm">
-                  <option :value="null" disabled selected>Seleccionar refacción...</option>
-                  <option v-for="r in refaccionesList" :key="r.id" :value="r">
-                    {{ r.nombre }} - ${{ Number(r.precio || 0).toFixed(2) }}
-                  </option>
-                </select>
-                <button type="button" @click="agregarRefaccion" class="bg-brand-500 text-white px-3 py-2 rounded-lg font-bold hover:bg-brand-600 transition-colors text-sm shrink-0 shadow-sm">
-                  Añadir
-                </button>
+              <div class="relative flex gap-2 mb-3">
+                <div class="flex-1 relative">
+                  <input 
+                    v-model="busquedaRefaccion" 
+                    @focus="showRefaccionesDropdown = true" 
+                    @blur="hideRefaccionesDropdown" 
+                    type="text" 
+                    class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm" 
+                    placeholder="Escribe para buscar una refacción..."
+                  >
+                  <ul 
+                    v-if="showRefaccionesDropdown && refaccionesBuscadas.length > 0" 
+                    class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto custom-scrollbar"
+                  >
+                    <li 
+                      v-for="r in refaccionesBuscadas" 
+                      :key="r.id" 
+                      @mousedown="seleccionarRefaccionBuscada(r)" 
+                      class="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-white transition-colors"
+                    >
+                      {{ r.nombre }} - <span class="font-bold text-brand-600 dark:text-brand-400">${{ Number(r.precio || 0).toFixed(2) }}</span>
+                    </li>
+                  </ul>
+                  <div v-if="showRefaccionesDropdown && refaccionesBuscadas.length === 0" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 text-center text-sm text-gray-500">
+                    No se encontraron resultados
+                  </div>
+                </div>
               </div>
               
               <div v-if="piezasActuales.length > 0" class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden mb-2">
@@ -503,33 +520,46 @@ const empezarTrabajo = () => {
 // ── Actualizar Orden (En Progreso) ──────────────────────────────────────────
 const showActualizarModal = ref(false);
 const ordenAActualizar = ref(null);
-const refaccionSeleccionada = ref(null);
 const nuevaNota = ref('');
 const piezasActuales = ref([]);
+const busquedaRefaccion = ref('');
+const showRefaccionesDropdown = ref(false);
+
+const refaccionesBuscadas = computed(() => {
+  if (!busquedaRefaccion.value.trim()) return refaccionesList.value;
+  const q = busquedaRefaccion.value.toLowerCase();
+  return refaccionesList.value.filter(r => r.nombre.toLowerCase().includes(q));
+});
+
+const seleccionarRefaccionBuscada = (refaccion) => {
+  piezasActuales.value.push({
+    id: refaccion.id,
+    nombre: refaccion.nombre,
+    precio: parseFloat(refaccion.precio) || 0,
+    imagen_url: refaccion.imagen_url || null
+  });
+  busquedaRefaccion.value = '';
+  showRefaccionesDropdown.value = false;
+};
+
+const hideRefaccionesDropdown = () => {
+  setTimeout(() => {
+    showRefaccionesDropdown.value = false;
+  }, 150);
+};
 
 const abrirActualizarOrden = (orden) => {
   ordenAActualizar.value = orden;
   piezasActuales.value = Array.isArray(orden.piezas) ? [...orden.piezas] : [];
   nuevaNota.value = '';
-  refaccionSeleccionada.value = null;
+  busquedaRefaccion.value = '';
+  showRefaccionesDropdown.value = false;
   showActualizarModal.value = true;
 };
 
 const cerrarActualizarOrden = () => {
   showActualizarModal.value = false;
   ordenAActualizar.value = null;
-};
-
-const agregarRefaccion = () => {
-  if (refaccionSeleccionada.value) {
-    piezasActuales.value.push({
-      id: refaccionSeleccionada.value.id,
-      nombre: refaccionSeleccionada.value.nombre,
-      precio: parseFloat(refaccionSeleccionada.value.precio) || 0,
-      imagen_url: refaccionSeleccionada.value.imagen_url || null
-    });
-    refaccionSeleccionada.value = null;
-  }
 };
 
 const quitarRefaccion = (index) => {
