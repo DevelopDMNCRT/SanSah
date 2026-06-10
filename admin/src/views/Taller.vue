@@ -510,14 +510,17 @@ const guardarNuevoServicio = async () => {
       })
     });
     
-    if (!res.ok) throw new Error();
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text);
+    }
     const nuevaOrden = await res.json();
     
     ordenes.value.unshift(nuevaOrden); // Agregarlo al principio
     cerrarNuevoServicio();
   } catch (e) {
     console.error('Error al guardar nuevo servicio:', e);
-    alert('Error al crear el servicio.');
+    alert('Error al crear el servicio. ' + e.message);
   } finally {
     guardandoServicio.value = false;
   }

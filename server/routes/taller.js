@@ -46,7 +46,7 @@ router.post('/', async (req, res) => {
     res.status(201).json(orden);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error al crear orden de taller' });
+    res.status(500).json({ error: 'Error al crear orden de taller', details: err.message });
   }
 });
 
