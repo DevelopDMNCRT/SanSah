@@ -69,8 +69,11 @@
                 </div>
               </div>
               
-              <!-- Description -->
-              <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{{ orden.descripcion }}</p>
+              <!-- Description & Service -->
+              <div class="space-y-1">
+                <div v-if="orden.servicio" class="text-[13px] font-bold text-brand-600 dark:text-brand-400 leading-snug">{{ orden.servicio }}</div>
+                <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{{ orden.descripcion }}</p>
+              </div>
               
               <!-- Bottom Row -->
               <div class="mt-1 flex items-center justify-between">
@@ -122,7 +125,10 @@
                 </div>
               </div>
               
-              <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{{ orden.descripcion }}</p>
+              <div class="space-y-1">
+                <div v-if="orden.servicio" class="text-[13px] font-bold text-brand-600 dark:text-brand-400 leading-snug">{{ orden.servicio }}</div>
+                <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{{ orden.descripcion }}</p>
+              </div>
               
               <div class="mt-1 flex items-center justify-between">
                 <span class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${{ orden.costo }}</span>
@@ -173,7 +179,10 @@
                 </div>
               </div>
               
-              <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{{ orden.descripcion }}</p>
+              <div class="space-y-1">
+                <div v-if="orden.servicio" class="text-[13px] font-bold text-brand-600 dark:text-brand-400 leading-snug">{{ orden.servicio }}</div>
+                <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{{ orden.descripcion }}</p>
+              </div>
               
               <div class="mt-1 flex items-center justify-between">
                 <span class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${{ orden.costo }}</span>
@@ -239,9 +248,16 @@
               </div>
             </div>
 
-            <div>
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Costo Estimado</p>
-              <p class="text-lg font-black text-brand-600 dark:text-brand-400">${{ ordenEnDetalle?.costo }}</p>
+            <div class="grid grid-cols-2 gap-4">
+              <div v-if="ordenEnDetalle?.servicio" class="col-span-2">
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Servicio Solicitado</p>
+                <p class="text-base font-black text-brand-600 dark:text-brand-400">{{ ordenEnDetalle.servicio }}</p>
+              </div>
+
+              <div>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Costo Estimado</p>
+                <p class="text-lg font-black text-gray-900 dark:text-white">${{ ordenEnDetalle?.costo }}</p>
+              </div>
             </div>
 
             <div>
@@ -306,9 +322,9 @@
 
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Servicio a realizar:</label>
-              <select v-model="nuevoServicioForm.costo" required class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
-                <option value="" disabled selected>Selecciona un servicio</option>
-                <option v-for="s in serviciosList" :key="s.id" :value="s.precio || 0">
+              <select v-model="nuevoServicioForm.servicioSeleccionado" required class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+                <option :value="null" disabled selected>Selecciona un servicio</option>
+                <option v-for="s in serviciosList" :key="s.id" :value="s">
                   {{ s.nombre }} - ${{ Number(s.precio || 0).toFixed(2) }}
                 </option>
               </select>
@@ -472,7 +488,7 @@ const nuevoServicioForm = reactive({
   bicicleta: '',
   descripcion: '',
   telefono: '',
-  costo: ''
+  servicioSeleccionado: null
 });
 
 const abrirNuevoServicio = () => {
@@ -480,7 +496,7 @@ const abrirNuevoServicio = () => {
   nuevoServicioForm.bicicleta = '';
   nuevoServicioForm.descripcion = '';
   nuevoServicioForm.telefono = '';
-  nuevoServicioForm.costo = '';
+  nuevoServicioForm.servicioSeleccionado = null;
   showNuevoServicioModal.value = true;
 };
 
@@ -505,7 +521,8 @@ const guardarNuevoServicio = async () => {
         bicicleta: nuevoServicioForm.bicicleta,
         descripcion: nuevoServicioForm.descripcion,
         telefono: nuevoServicioForm.telefono,
-        costo: nuevoServicioForm.costo,
+        costo: nuevoServicioForm.servicioSeleccionado?.precio || 0,
+        servicio: nuevoServicioForm.servicioSeleccionado?.nombre || '',
         fecha: `${horas}:${minutos}`
       })
     });

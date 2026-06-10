@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
 // POST /api/taller — Crear una nueva orden de servicio
 router.post('/', async (req, res) => {
   try {
-    const { cliente, bicicleta, telefono, descripcion, costo, fecha } = req.body;
+    const { cliente, bicicleta, telefono, descripcion, costo, servicio, fecha } = req.body;
     
     const numero = await generarOrdenTaller();
     
@@ -38,6 +38,7 @@ router.post('/', async (req, res) => {
         telefono: telefono || null,
         descripcion,
         costo: parseFloat(costo) || 0,
+        servicio: servicio || null,
         estado: 'recibido',
         fecha: fecha || null
       }
