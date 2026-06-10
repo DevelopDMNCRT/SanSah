@@ -251,8 +251,13 @@
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Costo Estimado ($):</label>
-              <input v-model="nuevoServicioForm.costo" type="number" min="0" step="0.01" required class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500" placeholder="0.00">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Servicio a realizar:</label>
+              <select v-model="nuevoServicioForm.costo" required class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+                <option value="" disabled selected>Selecciona un servicio</option>
+                <option v-for="s in serviciosList" :key="s.id" :value="s.precio || 0">
+                  {{ s.nombre }} - ${{ Number(s.precio || 0).toFixed(2) }}
+                </option>
+              </select>
             </div>
 
             <div class="pt-4 flex items-center justify-end gap-3">
@@ -280,6 +285,9 @@ const router = useRouter();
 
 // Productos para el datalist
 const productosList = ref([]);
+const serviciosList = computed(() => {
+  return productosList.value.filter(p => (p.tienda || '').toLowerCase() === 'servicios');
+});
 const fetchProductos = async () => {
   try {
     const res = await fetch((import.meta.env.VITE_API_URL || '') + '/api/products');
