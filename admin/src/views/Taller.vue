@@ -385,76 +385,132 @@
     <!-- Modal Actualizar Orden -->
     <Modal v-if="showActualizarModal" :fullScreenBackdrop="true" @close="cerrarActualizarOrden">
       <template #body>
-        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-lg shadow-xl border border-gray-100 dark:border-gray-700">
-          <div class="flex items-center justify-between mb-5">
-            <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">Actualizar Orden</h2>
-            <button @click="cerrarActualizarOrden" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
+        <div class="bg-white dark:bg-gray-900 rounded-2xl p-0 w-full max-w-[1000px] shadow-2xl border border-gray-200 dark:border-gray-800 flex flex-col md:flex-row overflow-hidden h-[85vh]">
+          <!-- Left Panel: Orden y Carrito (1/3 width) -->
+          <div class="w-full md:w-[320px] lg:w-[350px] flex flex-col bg-gray-50/50 dark:bg-gray-800/30 border-r border-gray-200 dark:border-gray-700 shrink-0">
+             <!-- Header con Título y Cerrar -->
+             <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800">
+               <h2 class="text-lg font-bold text-gray-800 dark:text-white">Actualizar Orden</h2>
+               <button @click="cerrarActualizarOrden" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+               </button>
+             </div>
+             
+             <!-- Body del Left Panel -->
+             <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar">
+                <!-- Cliente -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Cliente</p>
+                  <p class="text-[14px] font-bold text-gray-900 dark:text-white">{{ ordenAActualizar?.cliente }} <span v-if="ordenAActualizar?.bicicleta" class="text-brand-600 dark:text-brand-400">- {{ ordenAActualizar.bicicleta }}</span></p>
+                </div>
+                
+                <!-- Piezas Seleccionadas -->
+                <div class="flex-1 flex flex-col min-h-[200px]">
+                  <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Cargos Extra ({{ piezasActuales.length }})</p>
+                  
+                  <div v-if="piezasActuales.length === 0" class="flex-1 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl flex flex-col items-center justify-center text-gray-400 p-4">
+                    <svg class="h-8 w-8 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    <span class="text-xs text-center">Selecciona productos de la tienda para añadirlos.</span>
+                  </div>
+                  
+                  <div v-else class="flex-1 space-y-2 overflow-y-auto pr-1 custom-scrollbar">
+                    <div v-for="(pieza, i) in piezasActuales" :key="i" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 flex items-center gap-3 shadow-sm group">
+                      <div class="h-10 w-10 shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
+                        <img v-if="pieza.imagen_url" :src="pieza.imagen_url" loading="lazy" decoding="async" alt="" class="h-full w-full object-cover" />
+                        <div v-else class="h-full w-full flex items-center justify-center text-gray-300">
+                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        </div>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-[12px] text-gray-800 dark:text-gray-200 truncate">{{ pieza.nombre }}</h4>
+                        <p class="text-brand-600 dark:text-brand-400 text-[11px] font-black">${{ Number(pieza.precio).toFixed(2) }}</p>
+                      </div>
+                      <button type="button" @click="quitarRefaccion(i)" class="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-1.5 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Notas -->
+                <div class="mt-2">
+                  <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Añadir Nota a la Orden</p>
+                  <textarea v-model="nuevaNota" rows="2" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm resize-none shadow-sm" placeholder="Ej. Se encontraron frenos gastados..."></textarea>
+                </div>
+             </div>
+             
+             <!-- Footer Left Panel -->
+             <div class="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 space-y-3">
+               <div class="flex justify-between items-center px-1">
+                 <span class="text-sm font-bold text-gray-600 dark:text-gray-400">Total Extras:</span>
+                 <span class="text-lg font-black text-brand-600 dark:text-brand-400">${{ Number(totalPiezasActuales).toFixed(2) }}</span>
+               </div>
+               <div class="grid grid-cols-2 gap-2">
+                 <button type="button" @click="guardarCambiosActualizar(false)" class="w-full py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-[13px] shadow-sm">
+                   Guardar
+                 </button>
+                 <button type="button" @click="guardarCambiosActualizar(true)" class="w-full py-2.5 rounded-xl bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors text-[13px] shadow-sm flex items-center justify-center gap-1">
+                   Finalizar <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                 </button>
+               </div>
+             </div>
           </div>
 
-          <div class="space-y-4 text-left">
-            <div>
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Cliente</p>
-              <p class="text-base font-bold text-gray-900 dark:text-white">{{ ordenAActualizar?.cliente }} <span v-if="ordenAActualizar?.bicicleta">- {{ ordenAActualizar.bicicleta }}</span></p>
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Añadir Refacciones y Servicios:</label>
-              <div class="relative flex gap-2 mb-3">
-                <div class="flex-1 relative">
-                  <input 
-                    v-model="busquedaRefaccion" 
-                    @focus="showRefaccionesDropdown = true" 
-                    @blur="hideRefaccionesDropdown" 
-                    type="text" 
-                    class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm" 
-                    placeholder="Escribe para buscar (Ej. Cámara, Mantenimiento...)"
-                  >
-                  <ul 
-                    v-if="showRefaccionesDropdown && refaccionesBuscadas.length > 0" 
-                    class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto custom-scrollbar"
-                  >
-                    <li 
-                      v-for="r in refaccionesBuscadas" 
-                      :key="r.id" 
-                      @mousedown="seleccionarRefaccionBuscada(r)" 
-                      class="px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-white transition-colors"
-                    >
-                      {{ r.nombre }} - <span class="font-bold text-brand-600 dark:text-brand-400">${{ Number(r.precio || 0).toFixed(2) }}</span>
-                    </li>
-                  </ul>
-                  <div v-if="showRefaccionesDropdown && refaccionesBuscadas.length === 0" class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 text-center text-sm text-gray-500">
-                    No se encontraron resultados
-                  </div>
+          <!-- Right Panel: Tienda (2/3 width) -->
+          <div class="flex-1 flex flex-col bg-white dark:bg-gray-900 border-l md:border-l-0 border-t md:border-t-0 border-gray-200 dark:border-gray-800">
+            <!-- Header Tienda (Buscador y Tabs) -->
+            <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col gap-3">
+              <div class="flex justify-between items-center gap-3">
+                <h3 class="text-xl font-black text-gray-800 dark:text-white tracking-tight">Catálogo Extras</h3>
+                <div class="relative w-64">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input v-model="busquedaModal" type="text" placeholder="Buscar producto..." class="w-full pl-8 pr-3 py-1.5 h-9 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500" />
                 </div>
               </div>
               
-              <div v-if="piezasActuales.length > 0" class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden mb-2">
-                <div v-for="(pieza, i) in piezasActuales" :key="i" class="flex items-center justify-between p-2.5 border-b border-gray-200 dark:border-gray-700 last:border-0 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                  <span class="text-[13px] font-medium text-gray-700 dark:text-gray-200">{{ pieza.nombre }}</span>
-                  <div class="flex items-center gap-3">
-                    <span class="text-[13px] font-bold text-gray-900 dark:text-white">${{ Number(pieza.precio).toFixed(2) }}</span>
-                    <button type="button" @click="quitarRefaccion(i)" class="text-red-500 hover:text-red-600 p-1 bg-white dark:bg-gray-900 rounded-md shadow-sm border border-red-100 dark:border-red-900/30">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                    </button>
-                  </div>
-                </div>
+              <!-- Tabs de Categoría -->
+              <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
+                <button 
+                  v-for="cat in categoriasModal" 
+                  :key="cat"
+                  @click="activeCategoriaModal = cat"
+                  :class="activeCategoriaModal === cat ? 'bg-gray-900 text-white dark:bg-brand-500 shadow-md' : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700'"
+                  class="px-4 py-1.5 rounded-lg font-bold text-[12px] transition-all whitespace-nowrap"
+                >
+                  {{ cat }}
+                </button>
               </div>
             </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Añadir Nota a la Orden:</label>
-              <textarea v-model="nuevaNota" rows="2" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm" placeholder="Ej. Se encontraron frenos gastados..."></textarea>
-            </div>
             
-            <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-800 mt-4">
-              <button type="button" @click="guardarCambiosActualizar(false)" class="px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-[13px]">
-                Guardar Cambios
-              </button>
-              <button type="button" @click="guardarCambiosActualizar(true)" class="px-4 py-2.5 rounded-lg bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors text-[13px] shadow-sm flex items-center gap-1.5">
-                Finalizar Reparación <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-              </button>
+            <!-- Grid de Productos -->
+            <div class="flex-1 p-4 overflow-y-auto custom-scrollbar bg-gray-50/30 dark:bg-[#0f172a]/30">
+              <div v-if="productosModalFiltrados.length === 0" class="text-center text-gray-400 mt-10">
+                No se encontraron productos.
+              </div>
+              <div v-else class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pb-6">
+                <div 
+                  v-for="producto in productosModalFiltrados" 
+                  :key="producto.id"
+                  @click="seleccionarRefaccionBuscada(producto)"
+                  class="cursor-pointer group flex flex-col bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5 active:scale-95"
+                >
+                   <div class="h-28 w-full overflow-hidden bg-gray-50 dark:bg-gray-900 relative">
+                      <img v-if="producto.imagen_url" :src="producto.imagen_url" loading="lazy" decoding="async" class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                      <div v-else class="flex h-full items-center justify-center text-gray-300">
+                        <svg class="h-6 w-6 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                      </div>
+                      
+                      <!-- Precio flotante -->
+                      <div class="absolute bottom-1 right-1 bg-black/70 backdrop-blur-md px-1.5 py-0.5 rounded-lg shadow-sm border border-white/10">
+                        <span class="text-[11px] font-black text-white tracking-wide">${{ Number(producto.precio).toFixed(2) }}</span>
+                      </div>
+                   </div>
+                   <div class="p-2 flex-1 flex flex-col justify-between">
+                     <h4 class="font-bold text-[11px] text-gray-800 dark:text-gray-200 leading-snug line-clamp-2">{{ producto.nombre }}</h4>
+                     <p class="text-[9px] text-gray-400 mt-1 uppercase">{{ producto.tienda }}</p>
+                   </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -564,13 +620,27 @@ const showActualizarModal = ref(false);
 const ordenAActualizar = ref(null);
 const nuevaNota = ref('');
 const piezasActuales = ref([]);
-const busquedaRefaccion = ref('');
-const showRefaccionesDropdown = ref(false);
+// Estado del catálogo del modal
+const busquedaModal = ref('');
+const activeCategoriaModal = ref('Todos');
 
-const refaccionesBuscadas = computed(() => {
-  if (!busquedaRefaccion.value.trim()) return refaccionesList.value;
-  const q = busquedaRefaccion.value.toLowerCase();
-  return refaccionesList.value.filter(r => r.nombre.toLowerCase().includes(q));
+// Extraemos las categorías solo de Refacciones y Servicios
+const categoriasModal = computed(() => {
+  const cats = new Set(refaccionesList.value.map(p => p.tienda || 'General'));
+  return ['Todos', ...Array.from(cats)].filter(Boolean);
+});
+
+const productosModalFiltrados = computed(() => {
+  let lista = refaccionesList.value; // Solo refacciones y servicios
+  
+  if (activeCategoriaModal.value !== 'Todos') {
+    lista = lista.filter(p => (p.tienda || 'General') === activeCategoriaModal.value);
+  }
+  if (busquedaModal.value.trim()) {
+    const q = busquedaModal.value.toLowerCase();
+    lista = lista.filter(p => p.nombre.toLowerCase().includes(q));
+  }
+  return lista;
 });
 
 const seleccionarRefaccionBuscada = (refaccion) => {
@@ -580,22 +650,18 @@ const seleccionarRefaccionBuscada = (refaccion) => {
     precio: parseFloat(refaccion.precio) || 0,
     imagen_url: refaccion.imagen_url || null
   });
-  busquedaRefaccion.value = '';
-  showRefaccionesDropdown.value = false;
 };
 
-const hideRefaccionesDropdown = () => {
-  setTimeout(() => {
-    showRefaccionesDropdown.value = false;
-  }, 150);
-};
+const totalPiezasActuales = computed(() => {
+  return piezasActuales.value.reduce((acc, p) => acc + (p.precio || 0), 0);
+});
 
 const abrirActualizarOrden = (orden) => {
   ordenAActualizar.value = orden;
   piezasActuales.value = Array.isArray(orden.piezas) ? [...orden.piezas] : [];
   nuevaNota.value = '';
-  busquedaRefaccion.value = '';
-  showRefaccionesDropdown.value = false;
+  busquedaModal.value = '';
+  activeCategoriaModal.value = 'Todos';
   showActualizarModal.value = true;
 };
 
