@@ -266,7 +266,7 @@
               <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Datos del Cliente</label>
               <div class="grid grid-cols-2 gap-3">
                 <input v-model="paymentData.nombre" type="text" placeholder="Nombre completo" class="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white/90 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
-                <input v-model="paymentData.telefono" type="tel" placeholder="Teléfono" class="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white/90 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
+                <input v-model="paymentData.telefono" @input="paymentData.telefono = $event.target.value.replace(/\\D/g, '').slice(0, 10)" maxlength="10" type="tel" placeholder="Teléfono" class="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white/90 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
             </div>
             
