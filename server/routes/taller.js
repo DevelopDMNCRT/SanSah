@@ -69,6 +69,29 @@ router.put('/:id/estado', async (req, res) => {
   }
 });
 
+// PUT /api/taller/:id/detalles — Actualizar piezas y descripción
+router.put('/:id/detalles', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { descripcion, piezas, costo } = req.body;
+    
+    const dataToUpdate = {};
+    if (descripcion !== undefined) dataToUpdate.descripcion = descripcion;
+    if (piezas !== undefined) dataToUpdate.piezas = piezas;
+    if (costo !== undefined) dataToUpdate.costo = parseFloat(costo) || 0;
+
+    const orden = await prisma.ordenTaller.update({
+      where: { id },
+      data: dataToUpdate
+    });
+    
+    res.json(orden);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al actualizar detalles de la orden' });
+  }
+});
+
 // DELETE /api/taller/:id — Borrar una orden (ej. al completarse/cobrarse)
 router.delete('/:id', async (req, res) => {
   try {

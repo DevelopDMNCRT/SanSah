@@ -152,6 +152,7 @@ model OrdenTaller {
   descripcion String
   costo       Float
   servicio    String?
+  piezas      Json?
   estado      String   @default("recibido") // recibido | en_progreso | para_entrega
   fecha       String?  // Ej. "10:00"
   created_at  DateTime @default(now())

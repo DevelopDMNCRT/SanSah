@@ -132,8 +132,8 @@
               
               <div class="mt-1 flex items-center justify-between">
                 <span class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${{ orden.costo }}</span>
-                <button @click="moverA(orden, 'para_entrega')" class="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-all text-white px-4 py-2 rounded-xl font-bold text-[13px] shadow-sm flex items-center gap-1.5">
-                  Finalizar <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                <button @click="abrirActualizarOrden(orden)" class="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-all text-white px-4 py-2 rounded-xl font-bold text-[13px] shadow-sm flex items-center gap-1.5">
+                  Actualizar <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                 </button>
               </div>
             </div>
@@ -342,6 +342,68 @@
         </div>
       </template>
     </Modal>
+
+    <!-- Modal Actualizar Orden -->
+    <Modal v-if="showActualizarModal" :fullScreenBackdrop="true" @close="cerrarActualizarOrden">
+      <template #body>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-lg shadow-xl border border-gray-100 dark:border-gray-700">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">Actualizar Orden</h2>
+            <button @click="cerrarActualizarOrden" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="space-y-4 text-left">
+            <div>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Cliente</p>
+              <p class="text-base font-bold text-gray-900 dark:text-white">{{ ordenAActualizar?.cliente }} <span v-if="ordenAActualizar?.bicicleta">- {{ ordenAActualizar.bicicleta }}</span></p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Añadir Refacciones:</label>
+              <div class="flex gap-2 mb-3">
+                <select v-model="refaccionSeleccionada" class="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm">
+                  <option :value="null" disabled selected>Seleccionar refacción...</option>
+                  <option v-for="r in refaccionesList" :key="r.id" :value="r">
+                    {{ r.nombre }} - ${{ Number(r.precio || 0).toFixed(2) }}
+                  </option>
+                </select>
+                <button type="button" @click="agregarRefaccion" class="bg-brand-500 text-white px-3 py-2 rounded-lg font-bold hover:bg-brand-600 transition-colors text-sm shrink-0 shadow-sm">
+                  Añadir
+                </button>
+              </div>
+              
+              <div v-if="piezasActuales.length > 0" class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden mb-2">
+                <div v-for="(pieza, i) in piezasActuales" :key="i" class="flex items-center justify-between p-2.5 border-b border-gray-200 dark:border-gray-700 last:border-0 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                  <span class="text-[13px] font-medium text-gray-700 dark:text-gray-200">{{ pieza.nombre }}</span>
+                  <div class="flex items-center gap-3">
+                    <span class="text-[13px] font-bold text-gray-900 dark:text-white">${{ Number(pieza.precio).toFixed(2) }}</span>
+                    <button type="button" @click="quitarRefaccion(i)" class="text-red-500 hover:text-red-600 p-1 bg-white dark:bg-gray-900 rounded-md shadow-sm border border-red-100 dark:border-red-900/30">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Añadir Nota a la Orden:</label>
+              <textarea v-model="nuevaNota" rows="2" class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 text-sm" placeholder="Ej. Se encontraron frenos gastados..."></textarea>
+            </div>
+            
+            <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-800 mt-4">
+              <button type="button" @click="guardarCambiosActualizar(false)" class="px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-[13px]">
+                Guardar Cambios
+              </button>
+              <button type="button" @click="guardarCambiosActualizar(true)" class="px-4 py-2.5 rounded-lg bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors text-[13px] shadow-sm flex items-center gap-1.5">
+                Finalizar Reparación <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </Modal>
   </AdminLayout>
 </template>
 
@@ -357,6 +419,9 @@ const router = useRouter();
 const productosList = ref([]);
 const serviciosList = computed(() => {
   return productosList.value.filter(p => (p.tienda || '').toLowerCase() === 'servicios');
+});
+const refaccionesList = computed(() => {
+  return productosList.value.filter(p => (p.tienda || '').toLowerCase() === 'refacciones');
 });
 const fetchProductos = async () => {
   try {
@@ -435,6 +500,79 @@ const empezarTrabajo = () => {
   }
 };
 
+// ── Actualizar Orden (En Progreso) ──────────────────────────────────────────
+const showActualizarModal = ref(false);
+const ordenAActualizar = ref(null);
+const refaccionSeleccionada = ref(null);
+const nuevaNota = ref('');
+const piezasActuales = ref([]);
+
+const abrirActualizarOrden = (orden) => {
+  ordenAActualizar.value = orden;
+  piezasActuales.value = Array.isArray(orden.piezas) ? [...orden.piezas] : [];
+  nuevaNota.value = '';
+  refaccionSeleccionada.value = null;
+  showActualizarModal.value = true;
+};
+
+const cerrarActualizarOrden = () => {
+  showActualizarModal.value = false;
+  ordenAActualizar.value = null;
+};
+
+const agregarRefaccion = () => {
+  if (refaccionSeleccionada.value) {
+    piezasActuales.value.push({
+      id: refaccionSeleccionada.value.id,
+      nombre: refaccionSeleccionada.value.nombre,
+      precio: parseFloat(refaccionSeleccionada.value.precio) || 0,
+      imagen_url: refaccionSeleccionada.value.imagen_url || null
+    });
+    refaccionSeleccionada.value = null;
+  }
+};
+
+const quitarRefaccion = (index) => {
+  piezasActuales.value.splice(index, 1);
+};
+
+const guardarCambiosActualizar = async (finalizar = false) => {
+  if (!ordenAActualizar.value) return;
+  
+  let descripcionActualizada = ordenAActualizar.value.descripcion;
+  if (nuevaNota.value.trim()) {
+    descripcionActualizada += `\n\n[Nota extra]: ${nuevaNota.value.trim()}`;
+  }
+  
+  try {
+    const API_URL = import.meta.env.VITE_API_URL || '';
+    const res = await fetch(`${API_URL}/api/taller/${ordenAActualizar.value.id}/detalles`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        descripcion: descripcionActualizada,
+        piezas: piezasActuales.value
+      })
+    });
+    if (!res.ok) throw new Error();
+    
+    // Update local state
+    const ordenObj = ordenes.value.find(o => o.id === ordenAActualizar.value.id);
+    if (ordenObj) {
+      ordenObj.descripcion = descripcionActualizada;
+      ordenObj.piezas = [...piezasActuales.value];
+    }
+    
+    if (finalizar && ordenObj) {
+      await moverA(ordenObj, 'para_entrega');
+    }
+    cerrarActualizarOrden();
+  } catch (e) {
+    console.error(e);
+    alert('Error al guardar cambios.');
+  }
+};
+
 // ── Confirmación Entrega ────────────────────────────────────────────────────
 const showModal = ref(false);
 const ordenSeleccionada = ref(null);
@@ -464,7 +602,8 @@ const confirmarEntrega = async () => {
       cliente: orden.cliente,
       bicicleta: orden.bicicleta || 'Servicio General',
       descripcion: orden.descripcion,
-      costo: orden.costo
+      costo: orden.costo,
+      piezas: orden.piezas || []
     }));
 
     // Remove from UI

@@ -414,16 +414,35 @@ onMounted(() => {
   if (pendingService) {
     try {
       const srv = JSON.parse(pendingService);
+      
+      // 1. Añadir el servicio principal (costo base)
       cart.value.push({
         producto: {
           id: `taller-${srv.id}`,
           nombre: `Servicio: ${srv.bicicleta} - ${srv.cliente}`,
           precio: parseFloat(srv.costo) || 0,
-          imagen_url: '' // Placeholder native del POS
+          imagen_url: '' // Placeholder nativo del POS
         },
         cantidad: 1,
         variacionSeleccionada: null
       });
+      
+      // 2. Añadir las refacciones extra (si existen)
+      if (Array.isArray(srv.piezas)) {
+        srv.piezas.forEach(pieza => {
+          cart.value.push({
+            producto: {
+              id: pieza.id,
+              nombre: pieza.nombre,
+              precio: parseFloat(pieza.precio) || 0,
+              imagen_url: pieza.imagen_url || ''
+            },
+            cantidad: 1,
+            variacionSeleccionada: null
+          });
+        });
+      }
+      
       localStorage.removeItem('sansah_pending_service');
     } catch(e) {
       console.error("Error parsing pending service", e);
