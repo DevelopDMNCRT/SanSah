@@ -252,7 +252,7 @@
               Cancelar
             </button>
             <button @click="confirmarEntrega" class="flex-1 py-2.5 rounded-lg bg-green-500 text-white font-bold hover:bg-green-600 transition-colors shadow-sm flex items-center justify-center gap-2">
-              Mandar al POS y Entregar
+              Cobrar
             </button>
           </div>
         </div>
