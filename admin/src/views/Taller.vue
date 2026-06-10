@@ -75,8 +75,8 @@
               <!-- Bottom Row -->
               <div class="mt-1 flex items-center justify-between">
                 <span class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${{ orden.costo }}</span>
-                <button @click="moverA(orden, 'en_progreso')" class="bg-red-500 hover:bg-red-600 active:scale-95 transition-all text-white px-4 py-2 rounded-xl font-bold text-[13px] shadow-sm flex items-center gap-1.5">
-                  Trabajar <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                <button @click="abrirDetalles(orden)" class="bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all text-white px-4 py-2 rounded-xl font-bold text-[13px] shadow-sm flex items-center gap-1.5">
+                  Detalles <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
             </div>
@@ -205,6 +205,60 @@
             </button>
             <button @click="confirmarEntrega" class="flex-1 py-2.5 rounded-lg bg-brand-500 text-white font-medium hover:bg-brand-600 transition-colors">
               Confirmar
+            </button>
+          </div>
+        </div>
+      </template>
+    </Modal>
+
+    <!-- Modal Detalles del Servicio -->
+    <Modal v-if="showDetallesModal" :fullScreenBackdrop="true" @close="cerrarDetalles">
+      <template #body>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-lg shadow-xl border border-gray-100 dark:border-gray-700 relative">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white/90">Detalles del Servicio</h2>
+            <button @click="cerrarDetalles" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          
+          <div class="space-y-4 text-left">
+            <div>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Cliente</p>
+              <p class="text-base font-bold text-gray-900 dark:text-white">{{ ordenEnDetalle?.cliente }}</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Bicicleta</p>
+                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ ordenEnDetalle?.bicicleta || 'N/A' }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Teléfono</p>
+                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ ordenEnDetalle?.telefono || 'N/A' }}</p>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Costo Estimado</p>
+              <p class="text-lg font-black text-brand-600 dark:text-brand-400">${{ ordenEnDetalle?.costo }}</p>
+            </div>
+
+            <div>
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Notas / Descripción</p>
+              <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                <p class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{ ordenEnDetalle?.descripcion }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-6 flex items-center justify-end gap-3">
+            <button @click="cerrarDetalles" class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm">
+              Cerrar
+            </button>
+            <button @click="empezarTrabajo" class="px-5 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition-all flex items-center gap-2 shadow-sm text-sm active:scale-95">
+              Comenzar Reparación
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
             </button>
           </div>
         </div>
@@ -341,6 +395,27 @@ const moverA = async (orden, nuevoEstado) => {
     // Rollback
     if (index !== -1) ordenes.value[index].estado = estadoAnterior;
     alert('No se pudo actualizar el estado.');
+  }
+};
+
+// ── Detalles Servicio ────────────────────────────────────────────────────────
+const showDetallesModal = ref(false);
+const ordenEnDetalle = ref(null);
+
+const abrirDetalles = (orden) => {
+  ordenEnDetalle.value = orden;
+  showDetallesModal.value = true;
+};
+
+const cerrarDetalles = () => {
+  showDetallesModal.value = false;
+  ordenEnDetalle.value = null;
+};
+
+const empezarTrabajo = () => {
+  if (ordenEnDetalle.value) {
+    moverA(ordenEnDetalle.value, 'en_progreso');
+    cerrarDetalles();
   }
 };
 
