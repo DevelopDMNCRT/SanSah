@@ -60,7 +60,7 @@
               <!-- Badges -->
               <div class="flex flex-wrap gap-2">
                 <div class="bg-[#E6F3F2] dark:bg-teal-500/10 text-[#2D5A5A] dark:text-teal-400 border border-[#D0EBE8] dark:border-teal-500/20 rounded-lg px-2.5 py-1 text-xs font-semibold flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>
                   {{ orden.bicicleta || 'Bicicleta' }}
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-lg px-2.5 py-1 text-xs font-semibold flex items-center gap-1.5">
@@ -116,7 +116,7 @@
               
               <div class="flex flex-wrap gap-2">
                 <div class="bg-[#E6F3F2] dark:bg-teal-500/10 text-[#2D5A5A] dark:text-teal-400 border border-[#D0EBE8] dark:border-teal-500/20 rounded-lg px-2.5 py-1 text-xs font-semibold flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>
                   {{ orden.bicicleta || 'Bicicleta' }}
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-lg px-2.5 py-1 text-xs font-semibold flex items-center gap-1.5">
@@ -170,7 +170,7 @@
               
               <div class="flex flex-wrap gap-2">
                 <div class="bg-[#E6F3F2] dark:bg-teal-500/10 text-[#2D5A5A] dark:text-teal-400 border border-[#D0EBE8] dark:border-teal-500/20 rounded-lg px-2.5 py-1 text-xs font-semibold flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>
                   {{ orden.bicicleta || 'Bicicleta' }}
                 </div>
                 <div class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-lg px-2.5 py-1 text-xs font-semibold flex items-center gap-1.5">
