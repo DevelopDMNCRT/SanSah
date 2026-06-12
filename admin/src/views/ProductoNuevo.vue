@@ -67,7 +67,7 @@
               <!-- Precio General -->
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Precio
+                  Precio Público
                 </label>
                 <div class="relative">
                   <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>

@@ -38,6 +38,24 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/clientes/buscar?q=nombre  — búsqueda para autocomplete del Taller
+router.get('/buscar', async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json([]);
+    const clientes = await prisma.cliente.findMany({
+      where: { nombre: { contains: q, mode: 'insensitive' } },
+      select: { id: true, nombre: true, telefono: true },
+      take: 8,
+      orderBy: { nombre: 'asc' }
+    });
+    res.json(clientes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al buscar clientes' });
+  }
+});
+
 // GET /api/clientes/:correo  — detalle con pedidos del cliente (usado por ClienteDetalle.vue)
 router.get('/:correo', async (req, res) => {
   try {

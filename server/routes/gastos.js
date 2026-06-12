@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
         concepto,
         monto: parseFloat(monto),
         categoria,
-        fecha: fecha ? new Date(fecha) : new Date(),
+        fecha: (fecha && fecha.trim()) ? new Date(fecha) : new Date(),
         notas: notas || null
       }
     });

@@ -332,9 +332,41 @@
           </div>
           
           <form @submit.prevent="guardarNuevoServicio" class="space-y-4">
-            <div>
+            <!-- Autocomplete Cliente -->
+            <div class="relative">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">A nombre de:</label>
-              <input v-model="nuevoServicioForm.cliente" type="text" required class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500" placeholder="Ej. Juan Pérez">
+              <input
+                v-model="nuevoServicioForm.cliente"
+                @input="buscarClientes"
+                @blur="cerrarSugerencias"
+                @focus="buscarClientes"
+                type="text"
+                required
+                autocomplete="off"
+                class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                placeholder="Escribe para buscar o crear cliente..."
+              >
+              <!-- Sugerencias -->
+              <div
+                v-if="clienteSugerencias.length > 0 && mostrarSugerencias"
+                class="absolute z-50 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden"
+              >
+                <button
+                  v-for="c in clienteSugerencias"
+                  :key="c.id"
+                  type="button"
+                  @mousedown.prevent="seleccionarCliente(c)"
+                  class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-brand-50 dark:hover:bg-brand-500/10 text-left transition-colors"
+                >
+                  <div class="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-500/20 flex items-center justify-center shrink-0">
+                    <span class="text-xs font-bold text-brand-700 dark:text-brand-400">{{ c.nombre.charAt(0).toUpperCase() }}</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-white">{{ c.nombre }}</p>
+                    <p v-if="c.telefono" class="text-xs text-gray-500">{{ c.telefono }}</p>
+                  </div>
+                </button>
+              </div>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -768,12 +800,43 @@ const nuevoServicioForm = reactive({
   servicioSeleccionado: null
 });
 
+// ── Autocomplete Clientes ────────────────────────────────────────────────────
+const clienteSugerencias = ref([]);
+const mostrarSugerencias = ref(false);
+let buscarTimeout = null;
+
+const buscarClientes = () => {
+  mostrarSugerencias.value = true;
+  clearTimeout(buscarTimeout);
+  const q = nuevoServicioForm.cliente.trim();
+  if (!q) { clienteSugerencias.value = []; return; }
+  buscarTimeout = setTimeout(async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/clientes/buscar?q=${encodeURIComponent(q)}`);
+      if (res.ok) clienteSugerencias.value = await res.json();
+    } catch (e) { console.error(e); }
+  }, 220);
+};
+
+const seleccionarCliente = (c) => {
+  nuevoServicioForm.cliente = c.nombre;
+  if (c.telefono) nuevoServicioForm.telefono = c.telefono;
+  clienteSugerencias.value = [];
+  mostrarSugerencias.value = false;
+};
+
+const cerrarSugerencias = () => {
+  setTimeout(() => { mostrarSugerencias.value = false; }, 150);
+};
+
 const abrirNuevoServicio = () => {
   nuevoServicioForm.cliente = '';
   nuevoServicioForm.bicicleta = '';
   nuevoServicioForm.descripcion = '';
   nuevoServicioForm.telefono = '';
   nuevoServicioForm.servicioSeleccionado = null;
+  clienteSugerencias.value = [];
+  mostrarSugerencias.value = false;
   showNuevoServicioModal.value = true;
 };
 
