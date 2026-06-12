@@ -7,10 +7,10 @@
   "scripts": {
     "dev": "node --watch server.js",
     "start": "node server.js",
+    "build": "chmod +x node_modules/.bin/* 2>/dev/null || true && npx prisma generate",
     "db:push": "npx prisma db push",
     "db:studio": "npx prisma studio",
-    "setup:seq": "node setup-sequence.js",
-    "postinstall": "prisma generate"
+    "setup:seq": "node setup-sequence.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
