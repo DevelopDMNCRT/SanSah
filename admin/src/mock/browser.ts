@@ -16,6 +16,7 @@ const REAL_ROUTES = [
   '/api/inventario',
   '/api/taller',
   '/api/reportes',
+  '/api/gastos',
 ];
 
 function isRealRoute(url: string): boolean {
