@@ -1,8 +1,8 @@
 <template>
   <AdminLayout>
-    <div class="space-y-6 h-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800">
+    <div class="flex flex-col bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800" style="height: calc(100vh - 112px);">
       <!-- Page Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Órdenes del Taller</h1>
         </div>

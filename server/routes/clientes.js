@@ -3,6 +3,16 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Genera un código único de 5 caracteres alfanuméricos
+async function generarCodigo() {
+  let codigo, existe = true;
+  while (existe) {
+    codigo = String(Math.floor(10000 + Math.random() * 90000)); // 5 dígitos: 10000–99999
+    existe = await prisma.cliente.findUnique({ where: { codigo } });
+  }
+  return codigo;
+}
+
 // GET /api/clientes
 // Devuelve lista de clientes con conteo de pedidos y total gastado
 router.get('/', async (req, res) => {
@@ -14,6 +24,7 @@ router.get('/', async (req, res) => {
 
     const data = clientes.map(c => ({
       id: c.id,
+      codigo: c.codigo,
       nombre: c.nombre,
       correo: c.correo,
       telefono: c.telefono,
@@ -77,7 +88,8 @@ router.get('/:correo', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { nombre, correo, telefono } = req.body;
-    const cliente = await prisma.cliente.create({ data: { nombre, correo, telefono } });
+    const codigo = await generarCodigo();
+    const cliente = await prisma.cliente.create({ data: { codigo, nombre, correo: correo || null, telefono } });
     res.status(201).json(cliente);
   } catch (err) {
     console.error(err);

@@ -81,8 +81,9 @@ model Categoria {
 // ─── Clientes ──────────────────────────────────────────────────────────────────
 model Cliente {
   id         Int      @id @default(autoincrement())
+  codigo     String   @unique  // ID visible aleatorio de 5 caracteres, ej "A3K7F"
   nombre     String
-  correo     String   @unique
+  correo     String?  @unique  // Opcional — solo clientes de tienda en línea
   telefono   String?
   pedidos    Pedido[]
   created_at DateTime @default(now())

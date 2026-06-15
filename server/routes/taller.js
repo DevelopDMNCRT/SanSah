@@ -3,6 +3,16 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Genera un código único de 5 caracteres alfanuméricos para nuevos clientes
+async function generarCodigo() {
+  let codigo, existe = true;
+  while (existe) {
+    codigo = String(Math.floor(10000 + Math.random() * 90000));
+    existe = await prisma.cliente.findUnique({ where: { codigo } });
+  }
+  return codigo;
+}
+
 // Genera un número de orden OS-001, OS-002, etc.
 async function generarOrdenTaller() {
   const ultimo = await prisma.ordenTaller.findFirst({ orderBy: { id: 'desc' }, select: { id: true } });
@@ -28,6 +38,15 @@ router.post('/', async (req, res) => {
   try {
     const { cliente, bicicleta, telefono, descripcion, costo, servicio, fecha } = req.body;
     
+    const nombreReal = cliente || 'Cliente Mostrador';
+    let clienteDb = await prisma.cliente.findFirst({ where: { nombre: nombreReal } });
+    if (!clienteDb) {
+      const codigo = await generarCodigo();
+      clienteDb = await prisma.cliente.create({ data: { codigo, nombre: nombreReal, correo: null, telefono } });
+    } else if (telefono && !clienteDb.telefono) {
+      clienteDb = await prisma.cliente.update({ where: { id: clienteDb.id }, data: { telefono } });
+    }
+
     const numero = await generarOrdenTaller();
     
     const orden = await prisma.ordenTaller.create({

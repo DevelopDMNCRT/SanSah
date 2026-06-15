@@ -54,17 +54,9 @@
         <!-- Total and Pay -->
         <div class="p-3 bg-gray-50/80 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800">
           <div class="space-y-1 mb-3">
-            <div class="flex justify-between text-xs">
-              <span class="text-gray-500">Subtotal</span>
-              <span class="font-medium text-gray-700 dark:text-gray-300">{{ formatCurrency(subtotal) }}</span>
-            </div>
-            <div class="flex justify-between text-xs">
-              <span class="text-gray-500">IVA (16%)</span>
-              <span class="font-medium text-gray-700 dark:text-gray-300">{{ formatCurrency(subtotal * 0.16) }}</span>
-            </div>
-            <div class="pt-1.5 mt-1.5 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <div class="flex justify-between items-center">
               <span class="font-bold text-sm text-gray-800 dark:text-white">Total</span>
-              <span class="text-xl font-black text-brand-600 dark:text-brand-400">{{ formatCurrency(subtotal * 1.16) }}</span>
+              <span class="text-xl font-black text-brand-600 dark:text-brand-400">{{ formatCurrency(subtotal) }}</span>
             </div>
           </div>
           <!-- Botones: Cotizar PDF + Cobrar -->
@@ -223,10 +215,10 @@
     <Teleport to="body">
       <div v-if="showPaymentModal" class="fixed inset-0 z-[999999] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="closePaymentModal"></div>
-        <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700 animate-modal-in">
+        <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md flex flex-col border border-gray-200 dark:border-gray-700 animate-modal-in">
 
           <!-- Header -->
-          <div class="p-5 border-b border-gray-100 dark:border-gray-800">
+          <div class="p-5 border-b border-gray-100 dark:border-gray-800 rounded-t-2xl">
             <h3 class="text-lg font-bold text-gray-800 dark:text-white">Cobrar Orden</h3>
             <p class="text-sm text-gray-500 mt-0.5">Completa los datos para procesar el pago</p>
           </div>
@@ -241,7 +233,7 @@
               </div>
               <div class="flex justify-between items-center">
                 <span class="font-bold text-gray-800 dark:text-white">Total a cobrar</span>
-                <span class="text-2xl font-black text-brand-600 dark:text-brand-400">{{ formatCurrency(subtotal * 1.16) }}</span>
+                <span class="text-2xl font-black text-brand-600 dark:text-brand-400">{{ formatCurrency(subtotal) }}</span>
               </div>
             </div>
 
@@ -264,8 +256,32 @@
             <!-- Datos del Cliente -->
             <div>
               <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-400">Datos del Cliente</label>
-              <div class="grid grid-cols-2 gap-3">
-                <input v-model="paymentData.nombre" type="text" placeholder="Nombre completo" class="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white/90 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
+              <div class="grid grid-cols-2 gap-3 relative">
+                <!-- Autocomplete Input -->
+                <div class="relative">
+                  <input v-model="paymentData.nombre" 
+                    @input="buscarClientes"
+                    @blur="cerrarSugerencias"
+                    @focus="buscarClientes"
+                    type="text" 
+                    placeholder="Nombre completo" 
+                    autocomplete="off"
+                    class="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white/90 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
+                  
+                  <!-- Sugerencias -->
+                  <div v-if="clienteSugerencias.length > 0 && mostrarSugerencias" class="absolute z-[99999] top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+                    <button v-for="c in clienteSugerencias" :key="c.id" type="button" @mousedown.prevent="seleccionarCliente(c)" class="w-full flex items-center gap-3 px-3 py-2 hover:bg-brand-50 dark:hover:bg-brand-500/10 text-left transition-colors border-b border-gray-50 dark:border-gray-700/50 last:border-0">
+                      <div class="w-7 h-7 rounded-full bg-brand-100 dark:bg-brand-500/20 flex items-center justify-center shrink-0">
+                        <span class="text-[10px] font-bold text-brand-700 dark:text-brand-400">{{ c.nombre.charAt(0).toUpperCase() }}</span>
+                      </div>
+                      <div class="min-w-0">
+                        <p class="text-[13px] font-semibold text-gray-800 dark:text-white truncate">{{ c.nombre }}</p>
+                        <p v-if="c.telefono" class="text-[10px] text-gray-500 truncate">{{ c.telefono }}</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                
                 <input v-model="paymentData.telefono" @input="paymentData.telefono = ($event.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 10)" maxlength="10" type="tel" placeholder="Teléfono" class="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white/90 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
             </div>
@@ -273,7 +289,7 @@
           </div>
 
           <!-- Footer -->
-          <div class="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex gap-3">
+          <div class="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex gap-3 rounded-b-2xl">
             <button @click="closePaymentModal" class="flex-1 py-3 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">Cancelar</button>
             <button @click="processPayment"
               :disabled="!paymentData.method || isProcessingPayment"
@@ -535,6 +551,36 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
+// ── Autocomplete Clientes ────────────────────────────────────────────────────
+const clienteSugerencias = ref<any[]>([]);
+const mostrarSugerencias = ref(false);
+let buscarTimeout: any = null;
+
+const buscarClientes = () => {
+  mostrarSugerencias.value = true;
+  clearTimeout(buscarTimeout);
+  const q = paymentData.value.nombre?.trim();
+  if (!q) { clienteSugerencias.value = []; return; }
+  buscarTimeout = setTimeout(async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${API_URL}/api/clientes/buscar?q=${encodeURIComponent(q)}`);
+      if (res.ok) clienteSugerencias.value = await res.json();
+    } catch (e) { console.error(e); }
+  }, 220);
+};
+
+const seleccionarCliente = (c: any) => {
+  paymentData.value.nombre = c.nombre;
+  if (c.telefono) paymentData.value.telefono = c.telefono;
+  clienteSugerencias.value = [];
+  mostrarSugerencias.value = false;
+};
+
+const cerrarSugerencias = () => {
+  setTimeout(() => { mostrarSugerencias.value = false; }, 150);
+};
+
 // ── Payment Modal Logic ──
 const openPaymentModal = () => {
   if (cart.value.length === 0) return;
@@ -561,7 +607,7 @@ const processPayment = async () => {
       imagen: item.producto.imagen_url || null
     }));
 
-    const finalTotal = subtotal.value * 1.16;
+    const finalTotal = subtotal.value;
 
     const payload = {
       cliente_id: null,
@@ -669,24 +715,16 @@ const generateQuote = () => {
 
   // Totales al final
   const finalY = (doc as any).lastAutoTable.finalY + 8;
-  const iva = subtotal.value * 0.16;
-  const total = subtotal.value * 1.16;
-
-  doc.setFontSize(9);
-  doc.setTextColor(...SANSAH_COLORS.negro);
-  doc.text(`Subtotal:`, pageW - 60, finalY);
-  doc.text(formatCurrency(subtotal.value), pageW - 14, finalY, { align: 'right' });
-  doc.text(`IVA (16%):`, pageW - 60, finalY + 7);
-  doc.text(formatCurrency(iva), pageW - 14, finalY + 7, { align: 'right' });
+  const total = subtotal.value;
 
   // Total box naranja
   doc.setFillColor(...SANSAH_COLORS.naranja);
-  doc.roundedRect(pageW - 68, finalY + 12, 54, 12, 3, 3, 'F');
+  doc.roundedRect(pageW - 68, finalY, 54, 12, 3, 3, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text('TOTAL:', pageW - 62, finalY + 21);
-  doc.text(formatCurrency(total), pageW - 14, finalY + 21, { align: 'right' });
+  doc.text('TOTAL:', pageW - 62, finalY + 8.5);
+  doc.text(formatCurrency(total), pageW - 14, finalY + 8.5, { align: 'right' });
 
   // Footer
   const pageH = doc.internal.pageSize.getHeight();

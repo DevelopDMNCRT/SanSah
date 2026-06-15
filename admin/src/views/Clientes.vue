@@ -102,10 +102,10 @@ const cargar = async () => {
     const data = await res.json()
     clientes.value = data.map((c, i) => ({
       // La tabla ClientesTable espera: id, cid, nombre, email, alta, ultimaCompra, pedidos
-      id:           encodeURIComponent(c.correo),   // ID para la URL del detalle
-      cid:          c.correo.split('@')[0].toUpperCase().slice(0, 8),
+      id:           encodeURIComponent(c.correo || c.codigo),  // ID para la URL del detalle
+      cid:          c.codigo,                                   // Código único de 5 chars
       nombre:       c.nombre,
-      email:        c.correo,
+      email:        c.correo || null,                           // null si es cliente POS/Taller
       telefono:     c.telefono || '—',
       alta:         fmtFecha(c.primera_compra),
       ultimaCompra: fmtFecha(c.ultima_compra),

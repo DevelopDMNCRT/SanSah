@@ -3,6 +3,16 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Genera un código único de 5 caracteres alfanuméricos para nuevos clientes
+async function generarCodigo() {
+  let codigo, existe = true;
+  while (existe) {
+    codigo = String(Math.floor(10000 + Math.random() * 90000));
+    existe = await prisma.cliente.findUnique({ where: { codigo } });
+  }
+  return codigo;
+}
+
 // Genera número de orden, ej: ORD-1001
 async function generarOrden() {
   const ultimo = await prisma.pedido.findFirst({ orderBy: { id: 'desc' }, select: { id: true } });
@@ -50,14 +60,26 @@ router.post('/', async (req, res) => {
       envio, total, items, metodo_pago, canal_venta, estado 
     } = req.body;
 
-    const emailReal = correo || 'pos@sansah.local';
     const nombreReal = nombre || 'Cliente Mostrador';
+    let cliente = null;
 
-    // Buscar o crear cliente
-    let cliente = await prisma.cliente.findUnique({ where: { correo: emailReal } });
-    if (!cliente) {
-      cliente = await prisma.cliente.create({ data: { nombre: nombreReal, correo: emailReal, telefono } });
+    if (correo) {
+      cliente = await prisma.cliente.findUnique({ where: { correo } });
+      if (!cliente) {
+        const codigo = await generarCodigo();
+        cliente = await prisma.cliente.create({ data: { codigo, nombre: nombreReal, correo, telefono } });
+      }
+    } else {
+      cliente = await prisma.cliente.findFirst({ where: { nombre: nombreReal } });
+      if (!cliente) {
+        const codigo = await generarCodigo();
+        cliente = await prisma.cliente.create({ data: { codigo, nombre: nombreReal, correo: null, telefono } });
+      } else if (telefono && !cliente.telefono) {
+        cliente = await prisma.cliente.update({ where: { id: cliente.id }, data: { telefono } });
+      }
     }
+
+    const emailReal = correo || cliente.correo || 'pos@sansah.com';
 
     const orden = await generarOrden();
 

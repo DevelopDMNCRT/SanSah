@@ -62,10 +62,12 @@
           <!-- Correo -->
           <td class="px-5 py-4 sm:px-6">
             <a
+              v-if="cliente.email"
               :href="`mailto:${cliente.email}`"
               class="text-theme-sm text-brand-500 hover:text-brand-600 dark:text-brand-400 hover:underline"
               @click.stop
             >{{ cliente.email }}</a>
+            <span v-else class="text-theme-sm text-gray-400 dark:text-gray-500">—</span>
           </td>
 
           <!-- Pedidos -->

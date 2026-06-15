@@ -492,7 +492,11 @@ onMounted(async () => {
         imagen: null                           // null = sin nuevo archivo
       }));
       if (data.imagen_url) form.imagenPreview = data.imagen_url;
-      if (data.galeria_urls && data.galeria_urls.length > 0) form.galeriaPreview = data.galeria_urls;
+      if (data.galeria_urls && data.galeria_urls.length > 0) {
+        form.galeriaPreview = [...data.galeria_urls];
+        // Populate galeria with the existing URLs so removeGaleriaImg works correctly
+        form.galeria = data.galeria_urls.map(url => url);
+      }
     } catch (err) {
       console.error('Error fetching product:', err);
       alert('Error al cargar el producto para editar');
@@ -779,9 +783,12 @@ const guardar = async () => {
     if (form.imagen instanceof File) {
       fd.append('imagen', form.imagen);
     }
-    form.galeria.forEach(file => {
-      if (file instanceof File) fd.append('galeria', file);
-    });
+
+    // Gallery: separate existing URLs (to keep) from new File objects (to upload)
+    const existingGaleriaUrls = form.galeria.filter(f => typeof f === 'string');
+    const newGaleriaFiles = form.galeria.filter(f => f instanceof File);
+    fd.append('existing_galeria', JSON.stringify(existingGaleriaUrls));
+    newGaleriaFiles.forEach(file => fd.append('galeria', file));
 
     if (isEditing.value) {
       await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/products/${route.params.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
