@@ -54,6 +54,32 @@
                 <span class="text-sm font-medium text-gray-800 dark:text-white/90">{{ pedido.metodo_pago }}</span>
               </div>
 
+              <div class="col-span-2 sm:col-span-1">
+                <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase mb-1">Estado</p>
+                <div class="flex items-center gap-2">
+                  <select 
+                    v-model="estadoPendiente" 
+                    class="h-8 px-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-xs font-medium text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-brand-500 outline-none flex-1"
+                  >
+                    <option value="Nuevo">Nuevo</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="En proceso">En proceso</option>
+                    <option value="Cancelado">Cancelado</option>
+                    <option value="Rembolsado">Rembolsado</option>
+                    <option value="Fallido">Fallido</option>
+                    <option value="Completado">Completado</option>
+                  </select>
+                  <button 
+                    v-if="estadoPendiente !== pedido.estado" 
+                    @click="guardarEstado"
+                    :disabled="savingEstado"
+                    class="h-8 px-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold transition flex items-center justify-center shrink-0"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              </div>
+
               <template v-if="pedido.domicilio">
                 <div class="col-span-2">
                   <p class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase mb-1.5">Domicilio de entrega</p>
@@ -268,10 +294,12 @@ const subtotal   = computed(() => pedido.value?.items.reduce((s, x) => s + (x.pr
 const estadoTextClase = (estado) => {
   const m = {
     'Nuevo':      'text-blue-light-600 dark:text-blue-light-400',
+    'Pendiente':  'text-orange-500 dark:text-orange-400',
     'En proceso': 'text-warning-600 dark:text-warning-400',
     'Completado': 'text-success-600 dark:text-success-500',
     'Fallido':    'text-error-600 dark:text-error-500',
     'Cancelado':  'text-gray-500 dark:text-gray-400',
+    'Rembolsado': 'text-purple-600 dark:text-purple-400',
   };
   return m[estado] ?? '';
 };

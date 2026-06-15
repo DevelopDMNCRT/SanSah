@@ -85,7 +85,7 @@
                   {{ formatCurrency(gasto.monto) }}
                 </td>
                 <td class="py-4 px-6 text-right">
-                  <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div class="flex items-center justify-end gap-2">
                     <button @click="openModal(gasto)" class="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-lg transition-colors" title="Editar">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                     </button>
@@ -103,7 +103,7 @@
 
     <!-- Modal Registrar/Editar Gasto -->
     <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm" @click.self="closeModal">
+      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md" @click.self="closeModal">
         <div class="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800 animate-slide-up">
           <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ isEditing ? 'Editar Gasto' : 'Registrar Gasto' }}</h3>
@@ -217,10 +217,12 @@ const openModal = (gasto = null) => {
     };
   }
   showModal.value = true;
+  document.body.classList.add('modal-open');
 };
 
 const closeModal = () => {
   showModal.value = false;
+  document.body.classList.remove('modal-open');
 };
 
 const saveGasto = async () => {

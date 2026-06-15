@@ -761,3 +761,14 @@ span.flatpickr-weekday,
 .edit-button {
   @apply flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto;
 }
+
+/* ── Global modal blur ──────────────────────────────────────────────────────
+   When body has .modal-open, blur the entire #app (sidebar + header + content).
+   Teleported modals live directly on <body>, outside #app, so they stay sharp.
+────────────────────────────────────────────────────────────────────────── */
+body.modal-open #app {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+  transition: filter 0.2s ease;
+}

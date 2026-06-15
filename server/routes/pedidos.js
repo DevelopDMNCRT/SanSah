@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { sendEmail } = require('../utils/email');
 
 // Genera un código único de 5 caracteres alfanuméricos para nuevos clientes
 async function generarCodigo() {
@@ -146,8 +147,32 @@ router.put('/:id/estado', async (req, res) => {
       data: { estado }
     });
 
-    // Aquí se podría disparar un correo al cliente si EMAIL_TRIGGERS.has(estado)
-    const emailEnviado = false; // TODO: integrar Nodemailer/Resend cuando sea necesario
+    let emailEnviado = false;
+
+    if (estado === 'En proceso' && pedido.correo && !pedido.correo.endsWith('@sansah.local')) {
+      const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+          <div style="background-color: #101828; padding: 20px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">SanSah Bikes</h1>
+          </div>
+          <div style="padding: 30px 20px; color: #374151;">
+            <h2 style="color: #111827; font-size: 20px; margin-top: 0;">¡Tu pedido está en proceso!</h2>
+            <p>Hola <strong>${pedido.nombre}</strong>,</p>
+            <p>Te informamos que tu pedido <strong>#${pedido.orden}</strong> ha cambiado de estado y ahora está <strong>En proceso</strong>.</p>
+            <p>Estamos trabajando para tenerlo listo lo antes posible. Te notificaremos nuevamente cuando haya más actualizaciones.</p>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 14px;">
+              <p style="margin: 0;">Gracias por elegir SanSah Bikes</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      emailEnviado = await sendEmail(
+        pedido.correo,
+        `Tu pedido #${pedido.orden} está En proceso - SanSah Bikes`,
+        htmlContent
+      );
+    }
 
     res.json({ ...pedido, emailEnviado });
   } catch (err) {
