@@ -28,11 +28,7 @@ router.get('/', async (req, res) => {
       nombre: c.nombre,
       correo: c.correo,
       telefono: c.telefono,
-      primera_compra: c.pedidos.length
-        ? c.pedidos.reduce((oldest, p) =>
-            p.created_at < oldest.created_at ? p : oldest
-          ).created_at
-        : null,
+      primera_compra: c.created_at,  // Fecha de alta = siempre disponible
       ultima_compra: c.pedidos.length
         ? c.pedidos.reduce((newest, p) =>
             p.created_at > newest.created_at ? p : newest
