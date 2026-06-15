@@ -72,7 +72,7 @@
               <!-- Description & Service -->
               <div class="space-y-1">
                 <div v-if="orden.servicio" class="text-[13px] font-bold text-brand-600 dark:text-brand-400 leading-snug">{{ orden.servicio }}</div>
-                <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{{ orden.descripcion }}</p>
+                <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-4 leading-snug whitespace-pre-line">{{ orden.descripcion }}</p>
               </div>
               
               <!-- Bottom Row -->
@@ -127,14 +127,22 @@
               
               <div class="space-y-1">
                 <div v-if="orden.servicio" class="text-[13px] font-bold text-brand-600 dark:text-brand-400 leading-snug">{{ orden.servicio }}</div>
-                <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{{ orden.descripcion }}</p>
+                <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-4 leading-snug whitespace-pre-line">{{ orden.descripcion }}</p>
               </div>
               
-              <div class="mt-1 flex items-center justify-between">
-                <span class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${{ orden.costo }}</span>
-                <button @click="abrirActualizarOrden(orden)" class="bg-orange-500 hover:bg-orange-600 active:scale-95 transition-all text-white px-4 py-2 rounded-xl font-bold text-[13px] shadow-sm flex items-center gap-1.5">
-                  Actualizar <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                </button>
+              <div class="mt-2 flex flex-col gap-2">
+                <div class="flex items-center justify-between px-1">
+                  <span class="text-sm font-bold text-gray-500 dark:text-gray-400">Total:</span>
+                  <span class="text-lg font-black text-gray-900 dark:text-white tracking-tight">${{ orden.costo }}</span>
+                </div>
+                <div class="flex gap-2 w-full">
+                  <button @click="abrirActualizarOrden(orden)" class="flex-1 bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all text-white py-2 rounded-xl font-bold text-[12px] shadow-sm flex items-center justify-center">
+                    Refacciones
+                  </button>
+                  <button @click="moverA(orden, 'para_entrega')" class="flex-1 bg-green-500 hover:bg-green-600 active:scale-95 transition-all text-white py-2 rounded-xl font-bold text-[12px] shadow-sm flex items-center justify-center gap-1">
+                    Finalizar <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -181,7 +189,7 @@
               
               <div class="space-y-1">
                 <div v-if="orden.servicio" class="text-[13px] font-bold text-brand-600 dark:text-brand-400 leading-snug">{{ orden.servicio }}</div>
-                <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-snug">{{ orden.descripcion }}</p>
+                <p class="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-4 leading-snug whitespace-pre-line">{{ orden.descripcion }}</p>
               </div>
               
               <div class="mt-1 flex items-center justify-between">
@@ -478,10 +486,10 @@
                  <span class="text-lg font-black text-brand-600 dark:text-brand-400">${{ Number(totalPiezasActuales).toFixed(2) }}</span>
                </div>
                <div class="grid grid-cols-2 gap-2">
-                 <button type="button" @click="guardarCambiosActualizar(false)" class="w-full py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-[13px] shadow-sm">
-                   Guardar
+                 <button type="button" @click="cerrarActualizarOrden" class="w-full py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-[13px] shadow-sm">
+                   Cancelar
                  </button>
-                 <button type="button" @click="guardarCambiosActualizar(true)" class="w-full py-2.5 rounded-xl bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors text-[13px] shadow-sm flex items-center justify-center gap-1">
+                 <button type="button" @click="guardarCambiosActualizar(false)" class="w-full py-2.5 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors text-[13px] shadow-sm flex items-center justify-center gap-1">
                    Finalizar <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                  </button>
                </div>
