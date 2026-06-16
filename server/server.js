@@ -43,6 +43,21 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Debug DB connection
+app.get('/api/debug-db', async (_req, res) => {
+  const { PrismaClient } = require('@prisma/client');
+  const prisma = new PrismaClient();
+  try {
+    await prisma.$connect();
+    const count = await prisma.user.count();
+    res.json({ status: 'db_ok', userCount: count, DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET' });
+  } catch (err) {
+    res.status(500).json({ status: 'db_error', message: err.message, code: err.code, DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET' });
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
 // 404 catch-all
 app.use((_req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });
