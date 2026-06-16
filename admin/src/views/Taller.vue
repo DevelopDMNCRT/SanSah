@@ -570,12 +570,12 @@ const router = useRouter();
 // Productos para el datalist
 const productosList = ref([]);
 const serviciosList = computed(() => {
-  return productosList.value.filter(p => (p.tienda || '').toLowerCase() === 'servicios');
+  return productosList.value.filter(p => p.es_servicio);
 });
 const refaccionesList = computed(() => {
   return productosList.value.filter(p => {
     const t = (p.tienda || '').toLowerCase();
-    return t === 'refacciones' || t === 'servicios';
+    return t === 'refacciones' || p.es_servicio;
   });
 });
 const fetchProductos = async () => {

@@ -36,6 +36,7 @@ model Product {
   envio_especial  Float?
   peso            Float?
   es_variable     Boolean  @default(false)
+  es_servicio     Boolean  @default(false)
   es_publico      Boolean  @default(true)
   es_publico_pos  Boolean  @default(true)
   slug            String   @unique

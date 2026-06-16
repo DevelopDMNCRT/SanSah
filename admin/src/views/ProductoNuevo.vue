@@ -118,7 +118,7 @@
           </div>
 
           <!-- Identificación del Producto -->
-          <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
+          <div v-if="!form.esServicio" class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6 animate-fade-in">
             <h2 class="text-lg font-semibold text-gray-800 dark:text-white/90 mb-5">Identificación</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
               <!-- Número de Serie -->
@@ -135,7 +135,7 @@
                   Código de Barras
                   <span class="ml-1 text-xs font-normal text-error-500">*obligatorio</span>
                 </label>
-                <input v-model="form.codigo_barras" type="text" required placeholder="Ej. 7501234567890"
+                <input v-model="form.codigo_barras" type="text" :required="!form.esServicio" placeholder="Ej. 7501234567890"
                   class="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white/90 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
               </div>
             </div>
@@ -265,6 +265,19 @@
 
           <!-- Visibilidad + Flag -->
           <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-5 space-y-4">
+            
+            <!-- Switch: Servicio -->
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Es Servicio</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Activa si el producto no es físico</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" v-model="form.esServicio" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-500"></div>
+              </label>
+            </div>
+            
             <!-- Switch: Visible en Web -->
             <div class="flex items-center justify-between">
               <div>
@@ -420,6 +433,7 @@ const form = reactive({
   numero_serie: '',
   codigo_barras: '',
   esVariable: false,
+  esServicio: false,
   esPublico: true,
   esPublicoPOS: true,
   
@@ -482,6 +496,7 @@ onMounted(async () => {
       form.numero_serie = data.numero_serie || '';
       form.codigo_barras = data.codigo_barras || '';
       form.esVariable = data.es_variable;
+      form.esServicio = data.es_servicio || false;
       form.esPublico = data.es_publico;
       form.esPublicoPOS = data.es_publico_pos ?? true;
       if (data.atributos) form.atributos = data.atributos;
@@ -731,8 +746,8 @@ const guardar = async () => {
     alert('El nombre del producto es requerido');
     return;
   }
-  if (!form.codigo_barras.trim()) {
-    alert('El código de barras es obligatorio');
+  if (!form.esServicio && !form.codigo_barras.trim()) {
+    alert('El código de barras es obligatorio para productos físicos');
     return;
   }
   if (form.flag === 'Preventa' && (!form.preventaInicio || !form.preventaFin)) {
@@ -756,8 +771,9 @@ const guardar = async () => {
     fd.append('envio_especial', form.envioEspecial || '');
     fd.append('peso',           form.peso || '');
     fd.append('numero_serie',   form.numero_serie || '');
-    fd.append('codigo_barras',  form.codigo_barras || '');
+    fd.append('codigo_barras',  form.esServicio ? '' : (form.codigo_barras || ''));
     fd.append('es_variable',    form.esVariable ? 'true' : 'false');
+    fd.append('es_servicio',    form.esServicio ? 'true' : 'false');
     fd.append('es_publico',     form.esPublico ? 'true' : 'false');
     fd.append('es_publico_pos', form.esPublicoPOS ? 'true' : 'false');
     fd.append('slug',           slug.value);
