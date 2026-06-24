@@ -221,7 +221,7 @@ router.delete('/:id', async (req, res) => {
 router.post('/:id/entrada-stock', async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { referencia, cantidad, costo_unitario } = req.body;
+    const { referencia, cantidad, costo_unitario, forma_pago } = req.body;
 
     if (!cantidad || cantidad <= 0) {
       return res.status(400).json({ error: 'La cantidad debe ser mayor a 0' });
@@ -239,6 +239,7 @@ router.post('/:id/entrada-stock', async (req, res) => {
         costo_unitario: costo_unitario ? parseFloat(costo_unitario) : null,
         referencia: referencia || null,
         motivo: `Entrada manual de stock. Ref: ${referencia || 'N/A'}`,
+        forma_pago: forma_pago || null,
       }
     });
 

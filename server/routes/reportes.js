@@ -70,8 +70,47 @@ router.get('/ventas', async (req, res) => {
       };
     });
 
+    // --- EGRESOS (Gastos y Compras de Stock) ---
+    const gastos = await prisma.gasto.findMany();
+    const totalGastos = gastos.reduce((sum, g) => sum + g.monto, 0);
+
+    const comprasStock = await prisma.inventarioMovimiento.findMany({
+      where: { tipo: 'entrada' }
+    });
+    
+    let comprasEfectivo = 0;
+    let comprasTarjeta = 0;
+    let comprasTransferencia = 0;
+    let comprasOtro = 0;
+
+    comprasStock.forEach(c => {
+      const costo = c.costo_unitario ? c.costo_unitario * c.cantidad : 0;
+      const forma = (c.forma_pago || 'Otro').toLowerCase();
+      if (forma === 'efectivo') comprasEfectivo += costo;
+      else if (forma === 'tarjeta') comprasTarjeta += costo;
+      else if (forma === 'transferencia' || forma === 'transf.') comprasTransferencia += costo;
+      else comprasOtro += costo;
+    });
+
+    const totalCompras = comprasEfectivo + comprasTarjeta + comprasTransferencia + comprasOtro;
+    const egresoTotal = totalGastos + totalCompras;
+
+    const egresosDesgloseMap = {
+      'Gastos': totalGastos,
+      'Compras (Efectivo)': comprasEfectivo,
+      'Compras (Tarjeta)': comprasTarjeta,
+      'Compras (Transferencia)': comprasTransferencia,
+    };
+    if (comprasOtro > 0) egresosDesgloseMap['Compras (Otro)'] = comprasOtro;
+    
+    // Eliminar valores en 0
+    Object.keys(egresosDesgloseMap).forEach(k => {
+      if (egresosDesgloseMap[k] === 0) delete egresosDesgloseMap[k];
+    });
+
     res.json({
       ingreso_neto: ingresoNeto,
+      egreso_total: egresoTotal,
       ingresos_forma_pago: {
         labels: Object.keys(pagosMap),
         series: Object.values(pagosMap)
@@ -79,6 +118,10 @@ router.get('/ventas', async (req, res) => {
       ingresos_canal: {
         labels: Object.keys(canalesMap),
         series: Object.values(canalesMap)
+      },
+      egresos_desglose: {
+        labels: Object.keys(egresosDesgloseMap),
+        series: Object.values(egresosDesgloseMap)
       },
       top_productos: {
         labels: topProductos.map(t => t[0]),

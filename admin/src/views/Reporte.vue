@@ -33,21 +33,37 @@
       </div>
 
       <template v-else>
-        <!-- Ingreso Neto Card -->
-        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div class="flex items-center gap-4">
-            <div class="h-14 w-14 rounded-xl bg-success-500/10 flex items-center justify-center text-success-600 dark:text-success-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <!-- Totales Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-2">
+          <!-- Ingreso Neto Card -->
+          <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="h-14 w-14 rounded-xl bg-success-500/10 flex items-center justify-center text-success-600 dark:text-success-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Ingreso Neto Total</p>
+                <h3 class="text-3xl font-bold text-gray-900 dark:text-white/90">${{ (reporteData.ingreso_neto || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 }) }} <span class="text-lg text-gray-500">MXN</span></h3>
+              </div>
             </div>
-            <div>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Ingreso Neto Total</p>
-              <h3 class="text-3xl font-bold text-gray-900 dark:text-white/90">${{ (reporteData.ingreso_neto || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 }) }} <span class="text-lg text-gray-500">MXN</span></h3>
+          </div>
+
+          <!-- Egreso Total Card -->
+          <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="h-14 w-14 rounded-xl bg-error-500/10 flex items-center justify-center text-error-600 dark:text-error-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Gastos y Compras Total</p>
+                <h3 class="text-3xl font-bold text-gray-900 dark:text-white/90">${{ (reporteData.egreso_total || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 }) }} <span class="text-lg text-gray-500">MXN</span></h3>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Charts Grid 1 -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
           
           <!-- Forma de Pago -->
           <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
@@ -62,6 +78,14 @@
             <h2 class="text-base font-semibold text-gray-800 dark:text-white/90 mb-4">Ingresos por Canal de Venta</h2>
             <div class="min-h-[300px] flex items-center justify-center">
               <VueApexCharts type="donut" height="320" :options="canalOptions" :series="canalSeries" />
+            </div>
+          </div>
+
+          <!-- Gastos y Compras -->
+          <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6">
+            <h2 class="text-base font-semibold text-gray-800 dark:text-white/90 mb-4">Desglose de Gastos y Compras</h2>
+            <div class="min-h-[300px] flex items-center justify-center">
+              <VueApexCharts type="donut" height="320" :options="egresosOptions" :series="egresosSeries" />
             </div>
           </div>
           
@@ -148,7 +172,27 @@ const canalOptions = computed(() => ({
   dataLabels: { 
     enabled: true, 
     formatter: (val) => val.toFixed(1) + "%",
-    style: { fontSize: '16px', fontWeight: 'bold', colors: ['#000000', '#000000', '#000000', '#000000', '#000000'] },
+    style: { fontSize: '16px', fontWeight: 'bold', colors: ['#000000'] },
+    dropShadow: { enabled: false }
+  },
+  legend: { position: 'bottom', labels: { colors: '#9CA3AF' } },
+  tooltip: {
+    theme: 'light',
+    y: { formatter: (val) => `$${val.toLocaleString('es-MX')} MXN` }
+  }
+}));
+
+// --- Opciones Gráfica Egresos (Gastos y Compras) ---
+const egresosSeries = computed(() => reporteData.value?.egresos_desglose?.series || []);
+const egresosOptions = computed(() => ({
+  chart: { type: 'donut', fontFamily: 'inherit', background: 'transparent' },
+  labels: reporteData.value?.egresos_desglose?.labels || [],
+  colors: ['#ef4444', '#3b82f6', '#f59e0b', '#10b981', '#8b5cf6'],
+  stroke: { width: 0 },
+  dataLabels: { 
+    enabled: true, 
+    formatter: (val) => val.toFixed(1) + "%",
+    style: { fontSize: '16px', fontWeight: 'bold', colors: ['#000000'] },
     dropShadow: { enabled: false }
   },
   legend: { position: 'bottom', labels: { colors: '#9CA3AF' } },

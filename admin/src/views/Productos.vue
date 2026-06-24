@@ -237,6 +237,33 @@
                 </div>
               </div>
 
+              <!-- Forma de pago -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                  Forma de pago
+                </label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button @click="stockForm.forma_pago = 'Efectivo'"
+                    :class="stockForm.forma_pago === 'Efectivo' ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'"
+                    class="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl border-2 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+                    <span class="text-xs font-semibold">Efectivo</span>
+                  </button>
+                  <button @click="stockForm.forma_pago = 'Tarjeta'"
+                    :class="stockForm.forma_pago === 'Tarjeta' ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'"
+                    class="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl border-2 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    <span class="text-xs font-semibold">Tarjeta</span>
+                  </button>
+                  <button @click="stockForm.forma_pago = 'Transferencia'"
+                    :class="stockForm.forma_pago === 'Transferencia' ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400'"
+                    class="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl border-2 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.1l4 4-4 4"/><path d="M3 12.2v-2a4 4 0 0 1 4-4h13.8"/><path d="M7 21.9l-4-4 4-4"/><path d="M21 11.8v2a4 4 0 0 1-4 4H3.2"/></svg>
+                    <span class="text-xs font-semibold">Transf.</span>
+                  </button>
+                </div>
+              </div>
+
               <!-- Costo Total calculado -->
               <div class="flex items-center justify-between p-4 rounded-xl border-2 border-dashed"
                 :class="costoTotal > 0 ? 'border-brand-200 dark:border-brand-500/30 bg-brand-50/50 dark:bg-brand-500/5' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'">
@@ -351,7 +378,7 @@ const showStockModal  = ref(false);
 const productoActivo  = ref(null);
 const guardandoStock  = ref(false);
 const stockError      = ref('');
-const stockForm = ref({ referencia: '', cantidad: null, costo_unitario: null });
+const stockForm = ref({ referencia: '', cantidad: null, costo_unitario: null, forma_pago: 'Efectivo' });
 
 const costoTotal = computed(() => {
   const qty   = Number(stockForm.value.cantidad)   || 0;
@@ -361,7 +388,7 @@ const costoTotal = computed(() => {
 
 const abrirEntradaStock = (p) => {
   productoActivo.value = p;
-  stockForm.value      = { referencia: '', cantidad: null, costo_unitario: null };
+  stockForm.value      = { referencia: '', cantidad: null, costo_unitario: null, forma_pago: 'Efectivo' };
   stockError.value     = '';
   showStockModal.value = true;
 };
@@ -386,6 +413,7 @@ const guardarEntrada = async () => {
         referencia:     stockForm.value.referencia,
         cantidad:       stockForm.value.cantidad,
         costo_unitario: stockForm.value.costo_unitario,
+        forma_pago:     stockForm.value.forma_pago,
       }
     );
     // Actualizar stock en la lista sin recargar
