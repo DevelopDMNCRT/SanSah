@@ -120,9 +120,7 @@
     <!-- ═══ Modal: Entrada de Stock ════════════════════════════════════════ -->
     <Teleport to="body">
       <Transition name="fade">
-        <div v-if="showStockModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" @click.self="cerrarModal">
-          <!-- Backdrop difuminado que cubre TODO (sidebar + contenido) -->
-          <div class="absolute inset-0 bg-black/40 backdrop-blur-md"></div>
+        <div v-if="showStockModal" class="fixed inset-0 z-[999999] bg-black/40 backdrop-blur-md flex items-center justify-center p-4" @click.self="cerrarModal">
           <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-800 animate-modal-in z-10">
 
             <!-- Header -->

@@ -103,7 +103,7 @@
 
     <!-- Modal Registrar/Editar Gasto -->
     <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md" @click.self="closeModal">
+      <div v-if="showModal" class="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md" @click.self="closeModal">
         <div class="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800 animate-slide-up">
           <div class="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ isEditing ? 'Editar Gasto' : 'Registrar Gasto' }}</h3>

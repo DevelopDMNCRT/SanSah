@@ -224,7 +224,7 @@
   <!-- Modal resultado de envío -->
   <Teleport to="body">
     <transition name="fade">
-      <div v-if="resultModal.show" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.self="resultModal.show = false">
+      <div v-if="resultModal.show" class="fixed inset-0 z-[999999] flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.self="resultModal.show = false">
         <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
           <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
             <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
