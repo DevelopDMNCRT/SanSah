@@ -28,6 +28,7 @@ model Product {
   nombre          String
   descripcion     String?
   tienda          String?  // Nombre de categoría
+  marca           String?
   flag            String?
   preventa_inicio DateTime?
   preventa_fin    DateTime?
@@ -135,12 +136,14 @@ model PedidoItem {
 // Vista lógica — el inventario se calcula a partir de products y product_variations.
 // Esta tabla guarda movimientos manuales de ajuste de stock (entradas/salidas).
 model InventarioMovimiento {
-  id          Int      @id @default(autoincrement())
-  product_id  Int
-  tipo        String   // "entrada" | "salida" | "ajuste"
-  cantidad    Int
-  motivo      String?
-  created_at  DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  product_id     Int
+  tipo           String   // "entrada" | "salida" | "ajuste"
+  cantidad       Int
+  costo_unitario Float?   // Costo de cada unidad en esta entrada
+  referencia     String?  // Número de factura, orden, ticket, etc.
+  motivo         String?
+  created_at     DateTime @default(now())
 
   @@map("inventario")
 }

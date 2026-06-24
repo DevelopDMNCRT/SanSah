@@ -14,6 +14,14 @@ const ProductPage = () => {
   // Find product logic parsing ID explicitly
   const product = products.find(p => String(p.id) === String(productId));
 
+  const selectedValues = Object.values(selectedAttributes).map(v => v.toLowerCase().trim());
+  const matchedVariation = product?.raw?.es_variable && product?.raw?.variaciones 
+    ? product.raw.variaciones.find(v => {
+        const vValues = v.valor.toLowerCase().split('-').map(s => s.trim());
+        return vValues.every(val => selectedValues.includes(val));
+      })
+    : null;
+
   useEffect(() => {
     if (product && product.raw && product.raw.atributos) {
       const initial = {};
@@ -24,11 +32,16 @@ const ProductPage = () => {
         }
       });
       setSelectedAttributes(initial);
-      setCurrentImage(product.img);
+    }
+  }, [product]);
+
+  useEffect(() => {
+    if (matchedVariation && matchedVariation.imagen_url) {
+      setCurrentImage(matchedVariation.imagen_url);
     } else if (product) {
       setCurrentImage(product.img);
     }
-  }, [product]);
+  }, [matchedVariation, product]);
 
   if (loading) {
     return (
@@ -55,10 +68,20 @@ const ProductPage = () => {
   };
 
   const handleAddToCart = () => {
-    const variantString = Object.entries(selectedAttributes).map(([k, v]) => `${v}`).join(' / ');
-    
+    const finalVariant = Object.values(selectedAttributes).join(' - ') || 'Única';
+    const finalPrice = matchedVariation && matchedVariation.precio 
+      ? `$${parseFloat(matchedVariation.precio).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+      : product.price;
+    const finalImg = matchedVariation && matchedVariation.imagen_url ? matchedVariation.imagen_url : product.img;
+
     for (let i = 0; i < quantity; i++) {
-      addToCart({ ...product, size: variantString || 'Única' });
+      addToCart({ 
+        ...product, 
+        size: finalVariant,
+        price: finalPrice,
+        img: finalImg,
+        cartItemId: `${product.id}-${finalVariant}`
+      });
     }
   };
 
@@ -112,7 +135,11 @@ const ProductPage = () => {
             <div>
               <span style={{ color: 'var(--brand-primary)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.9rem' }}>{product.category}</span>
               <h1 style={{ fontSize: '3rem', margin: '0.5rem 0', color: 'var(--text-accent)', lineHeight: '1.1' }}>{product.title}</h1>
-              <p style={{ fontSize: '2rem', fontFamily: 'Jost', fontWeight: 'bold', color: 'var(--text-accent)' }}>{product.price}</p>
+              <p style={{ fontSize: '2rem', fontFamily: 'Jost', fontWeight: 'bold', color: 'var(--text-accent)' }}>
+                {matchedVariation && matchedVariation.precio 
+                  ? `$${parseFloat(matchedVariation.precio).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                  : product.price}
+              </p>
             </div>
 
             <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: '1.6', whiteSpace: 'pre-line' }}>
@@ -172,11 +199,15 @@ const ProductPage = () => {
 
               <button 
                 className="btn-primary" 
-                style={{ flex: 1, padding: '1rem', fontSize: '1.1rem', opacity: product.raw.stock > 0 ? 1 : 0.5, cursor: product.raw.stock > 0 ? 'pointer' : 'not-allowed' }} 
+                style={{ 
+                  flex: 1, padding: '1rem', fontSize: '1.1rem', 
+                  opacity: (matchedVariation ? matchedVariation.stock : (product.raw.stock === 0 ? 0 : 1)) > 0 ? 1 : 0.5, 
+                  cursor: (matchedVariation ? matchedVariation.stock : (product.raw.stock === 0 ? 0 : 1)) > 0 ? 'pointer' : 'not-allowed' 
+                }} 
                 onClick={handleAddToCart}
-                disabled={product.raw.stock <= 0}
+                disabled={(matchedVariation ? matchedVariation.stock : (product.raw.stock === 0 ? 0 : 1)) <= 0}
               >
-                {product.raw.stock > 0 ? 'Añadir al Carrito' : 'Agotado'}
+                {(matchedVariation ? matchedVariation.stock : (product.raw.stock === 0 ? 0 : 1)) > 0 ? 'Añadir al Carrito' : 'Agotado'}
               </button>
             </div>
 

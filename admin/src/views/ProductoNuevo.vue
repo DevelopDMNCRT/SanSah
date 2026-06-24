@@ -64,6 +64,13 @@
                 </select>
               </div>
 
+              <!-- Marca -->
+              <div>
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Marca</label>
+                <input v-model="form.marca" type="text" placeholder="Ej. Trek, Specialized, Shimano"
+                  class="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white/90 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
+              </div>
+
               <!-- Precio General -->
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -422,6 +429,7 @@ const form = reactive({
   nombre: '',
   descripcion: '',
   tienda: 'General',
+  marca: '',
   flag: '',
   preventaInicio: '',
   preventaFin: '',
@@ -485,6 +493,7 @@ onMounted(async () => {
       form.nombre = data.nombre;
       form.descripcion = data.descripcion || '';
       form.tienda = data.tienda || 'General';
+      form.marca = data.marca || '';
       form.flag = data.flag || '';
       form.preventaInicio = data.preventa_inicio ? data.preventa_inicio.slice(0, 10) : '';
       form.preventaFin    = data.preventa_fin    ? data.preventa_fin.slice(0, 10)    : '';
@@ -762,6 +771,7 @@ const guardar = async () => {
     fd.append('nombre',         form.nombre);
     fd.append('descripcion',    form.descripcion || '');
     fd.append('tienda',         form.tienda);
+    fd.append('marca',          form.marca || '');
     fd.append('flag',             form.flag);
     fd.append('preventa_inicio', form.flag === 'Preventa' ? form.preventaInicio : '');
     fd.append('preventa_fin',    form.flag === 'Preventa' ? form.preventaFin    : '');

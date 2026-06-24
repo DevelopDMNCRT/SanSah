@@ -88,9 +88,13 @@
                 </td>
                 <!-- Stock -->
                 <td class="px-5 py-4 sm:px-6">
-                  <span :class="p.stock > 10 ? 'text-success-600 dark:text-success-500' : p.stock > 0 ? 'text-warning-600 dark:text-warning-400' : 'text-error-500'"
-                    class="text-theme-sm font-medium">
-                    {{ p.es_variable ? `${p.variaciones_count} var.` : (p.stock > 0 ? p.stock : 'Sin stock') }}
+                  <span
+                    :class="(p.stock ?? 0) > 10 ? 'text-success-600 dark:text-success-500' : (p.stock ?? 0) > 0 ? 'text-warning-600 dark:text-warning-400' : 'text-error-500'"
+                    class="text-theme-sm font-medium"
+                  >
+                    {{ p.es_variable
+                        ? ((p.variaciones && p.variaciones.length > 0) ? `${p.variaciones.length} var.` : '—')
+                        : ((p.stock ?? 0) > 0 ? p.stock : 'Sin stock') }}
                   </span>
                 </td>
                 <!-- Tienda -->
@@ -136,7 +140,7 @@
               </tr>
 
               <tr v-if="productosFiltrados.length === 0 && !loading">
-                <td colspan="7" class="px-5 py-16 text-center">
+                <td colspan="9" class="px-5 py-16 text-center">
                   <svg class="mx-auto mb-3 text-gray-300 dark:text-gray-600" xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                   <p class="text-sm text-gray-400 dark:text-gray-500">No hay productos aún.</p>
                   <router-link to="/productos/nuevo" class="mt-2 inline-block text-sm text-brand-500 hover:underline">Crear el primero</router-link>
@@ -148,6 +152,131 @@
       </div>
 
     </div>
+
+    <!-- ═══ Modal: Entrada de Stock ════════════════════════════════════════ -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showStockModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click.self="cerrarModal">
+          <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-800 animate-modal-in">
+
+            <!-- Header -->
+            <div class="flex items-start justify-between p-6 border-b border-gray-100 dark:border-gray-800">
+              <div>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Entrada de Inventario</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-[280px]">{{ productoActivo?.nombre }}</p>
+              </div>
+              <button @click="cerrarModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <!-- Stock actual -->
+            <div class="px-6 pt-4">
+              <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-50 dark:bg-brand-500/10">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-500"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Stock actual</p>
+                  <p class="text-xl font-black text-gray-900 dark:text-white">{{ productoActivo?.stock || 0 }} <span class="text-sm font-normal text-gray-400">unidades</span></p>
+                </div>
+                <div v-if="stockForm.cantidad > 0" class="ml-auto text-right">
+                  <p class="text-xs text-gray-400">Nuevo total</p>
+                  <p class="text-xl font-black text-success-600 dark:text-success-500">{{ (productoActivo?.stock || 0) + stockForm.cantidad }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form -->
+            <div class="p-6 space-y-4">
+              <!-- Referencia -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                  Referencia
+                  <span class="font-normal text-gray-400 ml-1">(Folio, factura o ticket)</span>
+                </label>
+                <input
+                  v-model="stockForm.referencia"
+                  type="text"
+                  placeholder="Ej. FAC-2024-001, TICKET-452..."
+                  class="w-full h-10 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <!-- Unidades -->
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Unidades a ingresar <span class="text-error-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="stockForm.cantidad"
+                    type="number"
+                    min="1"
+                    placeholder="0"
+                    class="w-full h-10 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  />
+                </div>
+
+                <!-- Costo unitario -->
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Costo unitario
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">$</span>
+                    <input
+                      v-model.number="stockForm.costo_unitario"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                      class="w-full h-10 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent pl-7 pr-4 text-sm text-gray-900 dark:text-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Costo Total calculado -->
+              <div class="flex items-center justify-between p-4 rounded-xl border-2 border-dashed"
+                :class="costoTotal > 0 ? 'border-brand-200 dark:border-brand-500/30 bg-brand-50/50 dark:bg-brand-500/5' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'">
+                <div>
+                  <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Costo Total de la Entrada</p>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ stockForm.cantidad || 0 }} ud. × ${{ (stockForm.costo_unitario || 0).toFixed(2) }}</p>
+                </div>
+                <p class="text-2xl font-black" :class="costoTotal > 0 ? 'text-brand-600 dark:text-brand-400' : 'text-gray-300 dark:text-gray-600'">
+                  ${{ costoTotal.toFixed(2) }}
+                </p>
+              </div>
+
+              <!-- Error -->
+              <p v-if="stockError" class="text-sm text-error-500 text-center">{{ stockError }}</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center gap-3 px-6 pb-6">
+              <button @click="cerrarModal" class="flex-1 h-10 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                Cancelar
+              </button>
+              <button
+                @click="guardarEntrada"
+                :disabled="guardandoStock || !stockForm.cantidad || stockForm.cantidad <= 0"
+                class="flex-1 h-10 rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg v-if="guardandoStock" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                {{ guardandoStock ? 'Guardando...' : 'Registrar Entrada' }}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </AdminLayout>
 </template>
 
@@ -216,4 +345,69 @@ const eliminar = async (p) => {
     alert('Error al eliminar el producto');
   }
 };
+
+// ── Modal Entrada de Stock ──────────────────────────────────────────────────
+const showStockModal  = ref(false);
+const productoActivo  = ref(null);
+const guardandoStock  = ref(false);
+const stockError      = ref('');
+const stockForm = ref({ referencia: '', cantidad: null, costo_unitario: null });
+
+const costoTotal = computed(() => {
+  const qty   = Number(stockForm.value.cantidad)   || 0;
+  const costo = Number(stockForm.value.costo_unitario) || 0;
+  return qty * costo;
+});
+
+const abrirEntradaStock = (p) => {
+  productoActivo.value = p;
+  stockForm.value      = { referencia: '', cantidad: null, costo_unitario: null };
+  stockError.value     = '';
+  showStockModal.value = true;
+};
+
+const cerrarModal = () => {
+  showStockModal.value = false;
+  productoActivo.value = null;
+};
+
+const guardarEntrada = async () => {
+  stockError.value = '';
+  if (!stockForm.value.cantidad || stockForm.value.cantidad <= 0) {
+    stockError.value = 'Ingresa una cantidad válida mayor a 0.';
+    return;
+  }
+
+  guardandoStock.value = true;
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_URL || ''}/api/products/${productoActivo.value.id}/entrada-stock`,
+      {
+        referencia:     stockForm.value.referencia,
+        cantidad:       stockForm.value.cantidad,
+        costo_unitario: stockForm.value.costo_unitario,
+      }
+    );
+    // Actualizar stock en la lista sin recargar
+    const idx = productos.value.findIndex(p => p.id === productoActivo.value.id);
+    if (idx !== -1) productos.value[idx].stock = res.data.producto.stock;
+    cerrarModal();
+  } catch (err) {
+    stockError.value = err?.response?.data?.error || 'Error al guardar la entrada.';
+  } finally {
+    guardandoStock.value = false;
+  }
+};
 </script>
+
+<style scoped>
+.animate-modal-in {
+  animation: modalIn 0.2s ease-out forwards;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to       { opacity: 0; }
+</style>

@@ -243,12 +243,12 @@ const Navbar = () => {
                     <h4 style={{ margin: '0 0 0.2rem 0', fontSize: '0.9rem' }}>{item.title}</h4>
                     <span style={{ color: 'var(--brand-primary)', fontWeight: 'bold' }}>{item.price}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '0.5rem' }}>
-                      <button style={{ border:'1px solid var(--glass-border)', background:'transparent', width:'24px', borderRadius:'4px', cursor:'pointer'}} onClick={() => updateQuantity(item.id, -1)}>-</button>
+                      <button style={{ border:'1px solid var(--glass-border)', background:'transparent', width:'24px', borderRadius:'4px', cursor:'pointer'}} onClick={() => updateQuantity(item.cartItemId || item.id, -1)}>-</button>
                       <span style={{ fontSize: '0.9rem' }}>{item.quantity}</span>
-                      <button style={{ border:'1px solid var(--glass-border)', background:'transparent', width:'24px', borderRadius:'4px', cursor:'pointer'}} onClick={() => updateQuantity(item.id, 1)}>+</button>
+                      <button style={{ border:'1px solid var(--glass-border)', background:'transparent', width:'24px', borderRadius:'4px', cursor:'pointer'}} onClick={() => updateQuantity(item.cartItemId || item.id, 1)}>+</button>
                     </div>
                   </div>
-                  <button onClick={() => removeFromCart(item.id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
+                  <button onClick={() => removeFromCart(item.cartItemId || item.id)} style={{ background: 'transparent', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
                 </div>
               ))}
             </div>

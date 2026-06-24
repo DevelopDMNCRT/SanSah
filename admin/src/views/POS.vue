@@ -105,7 +105,7 @@
           </div>
 
           <!-- Category Tabs -->
-          <div class="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+          <div class="flex flex-wrap gap-2 pb-1">
             <button
               v-for="cat in categorias" :key="cat"
               @click="activeCategoria = cat"
@@ -384,6 +384,7 @@ const showPaymentModal = ref(false);
 const showConfirmationModal = ref(false);
 const showClearModal = ref(false);
 const paymentData = ref({ method: '', nombre: '', telefono: '' });
+const prefilledClientInfo = ref({ nombre: '', telefono: '' });
 const isProcessingPayment = ref(false);
 const confirmedOrder = ref({ orderNum: 0, methodLabel: '', total: 0 });
 const paymentMethods = [
@@ -431,6 +432,9 @@ onMounted(() => {
     try {
       const srv = JSON.parse(pendingService);
       
+      prefilledClientInfo.value.nombre = srv.cliente || '';
+      prefilledClientInfo.value.telefono = srv.telefono || '';
+
       // 1. Añadir el servicio principal (costo base)
       cart.value.push({
         producto: {
@@ -533,6 +537,7 @@ const clearCart = () => {
 const confirmClearCart = () => {
   cart.value = [];
   showClearModal.value = false;
+  prefilledClientInfo.value = { nombre: '', telefono: '' };
 };
 
 const calcItemTotal = (item: any) => {
@@ -584,7 +589,11 @@ const cerrarSugerencias = () => {
 // ── Payment Modal Logic ──
 const openPaymentModal = () => {
   if (cart.value.length === 0) return;
-  paymentData.value = { method: '', nombre: '', telefono: '' };
+  paymentData.value = { 
+    method: '', 
+    nombre: prefilledClientInfo.value.nombre || '', 
+    telefono: prefilledClientInfo.value.telefono || '' 
+  };
   showPaymentModal.value = true;
 };
 
@@ -742,6 +751,7 @@ const closeConfirmationModal = () => {
   showConfirmationModal.value = false;
   cart.value = [];
   currentOrderNum.value = Math.floor(Math.random() * 9000) + 1000;
+  prefilledClientInfo.value = { nombre: '', telefono: '' };
 };
 </script>
 

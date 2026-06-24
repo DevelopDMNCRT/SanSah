@@ -80,11 +80,19 @@
                     {{ p.es_variable ? 'Variable' : 'Simple' }}
                   </span>
                 </td>
-                <!-- Stock -->
+                <!-- Stock — clickeable -->
                 <td class="px-5 py-4 sm:px-6">
-                  <span :class="p.stock > 10 ? 'text-success-600 dark:text-success-500' : p.stock > 0 ? 'text-warning-600 dark:text-warning-400' : 'text-error-500'"
-                    class="text-theme-sm font-medium">
-                    {{ p.es_variable ? `${p.variaciones_count} var.` : (p.stock > 0 ? p.stock : 'Sin stock') }}
+                  <button
+                    v-if="!p.es_variable"
+                    @click="abrirEntradaStock(p)"
+                    :class="(p.stock ?? 0) > 10 ? 'text-success-600 dark:text-success-500 hover:underline' : (p.stock ?? 0) > 0 ? 'text-warning-600 dark:text-warning-400 hover:underline' : 'text-error-500 hover:underline'"
+                    class="text-theme-sm font-medium cursor-pointer transition-opacity hover:opacity-70"
+                    title="Clic para registrar entrada de stock"
+                  >
+                    {{ (p.stock ?? 0) > 0 ? p.stock : 'Sin stock' }}
+                  </button>
+                  <span v-else class="text-theme-sm font-medium text-blue-light-600 dark:text-blue-light-400">
+                    {{ (p.variaciones && p.variaciones.length > 0) ? `${p.variaciones.length} var.` : '—' }}
                   </span>
                 </td>
                 <!-- Estado -->
@@ -108,6 +116,133 @@
       </div>
 
     </div>
+
+    <!-- ═══ Modal: Entrada de Stock ════════════════════════════════════════ -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showStockModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" @click.self="cerrarModal">
+          <!-- Backdrop difuminado que cubre TODO (sidebar + contenido) -->
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-md"></div>
+          <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-800 animate-modal-in z-10">
+
+            <!-- Header -->
+            <div class="flex items-start justify-between p-6 border-b border-gray-100 dark:border-gray-800">
+              <div>
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Entrada de Inventario</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate max-w-[280px]">{{ productoActivo?.nombre }}</p>
+              </div>
+              <button @click="cerrarModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <!-- Stock actual -->
+            <div class="px-6 pt-4">
+              <div class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+                <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-50 dark:bg-brand-500/10">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-brand-500"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Stock actual</p>
+                  <p class="text-xl font-black text-gray-900 dark:text-white">{{ productoActivo?.stock || 0 }} <span class="text-sm font-normal text-gray-400">unidades</span></p>
+                </div>
+                <div v-if="(stockForm.cantidad ?? 0) > 0" class="ml-auto text-right">
+                  <p class="text-xs text-gray-400">Nuevo total</p>
+                  <p class="text-xl font-black text-success-600 dark:text-success-500">{{ (productoActivo?.stock || 0) + (stockForm.cantidad || 0) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form -->
+            <div class="p-6 space-y-4">
+              <!-- Referencia -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                  Referencia
+                  <span class="font-normal text-gray-400 ml-1">(Folio, factura o ticket)</span>
+                </label>
+                <input
+                  v-model="stockForm.referencia"
+                  type="text"
+                  placeholder="Ej. FAC-2024-001, TICKET-452..."
+                  class="w-full h-10 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                />
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <!-- Unidades -->
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Unidades a ingresar <span class="text-error-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="stockForm.cantidad"
+                    type="number"
+                    min="1"
+                    placeholder="0"
+                    class="w-full h-10 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  />
+                </div>
+
+                <!-- Costo TOTAL (input) -->
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Costo total
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">$</span>
+                    <input
+                      v-model.number="stockForm.costo_total"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                      class="w-full h-10 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent pl-7 pr-4 text-sm text-gray-900 dark:text-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Costo Unitario calculado -->
+              <div class="flex items-center justify-between p-4 rounded-xl border-2 border-dashed"
+                :class="costoUnitario > 0 ? 'border-brand-200 dark:border-brand-500/30 bg-brand-50/50 dark:bg-brand-500/5' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'">
+                <div>
+                  <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Costo Unitario</p>
+                  <p class="text-xs text-gray-400 mt-0.5">${{ Number(stockForm.costo_total || 0).toFixed(2) }} ÷ {{ stockForm.cantidad || 0 }} ud.</p>
+                </div>
+                <p class="text-2xl font-black" :class="costoUnitario > 0 ? 'text-brand-600 dark:text-brand-400' : 'text-gray-300 dark:text-gray-600'">
+                  ${{ costoUnitario.toFixed(2) }}
+                </p>
+              </div>
+
+              <!-- Error -->
+              <p v-if="stockError" class="text-sm text-error-500 text-center">{{ stockError }}</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center gap-3 px-6 pb-6">
+              <button @click="cerrarModal" class="flex-1 h-10 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                Cancelar
+              </button>
+              <button
+                @click="guardarEntrada"
+                :disabled="guardandoStock || !stockForm.cantidad || stockForm.cantidad <= 0"
+                class="flex-1 h-10 rounded-xl bg-brand-500 text-white font-bold text-sm hover:bg-brand-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg v-if="guardandoStock" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                {{ guardandoStock ? 'Guardando...' : 'Registrar Entrada' }}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </AdminLayout>
 </template>
 
@@ -119,9 +254,9 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { SANSAH_LOGO_B64, SANSAH_COLORS } from '@/utils/pdfBrand';
 
-const busqueda     = ref('');
-const loading      = ref(true);
-const productos    = ref([]);
+const busqueda  = ref('');
+const loading   = ref(true);
+const productos = ref([]);
 
 const fetchProductos = async () => {
   loading.value = true;
@@ -151,18 +286,66 @@ const totalPiezasStock = computed(() => {
   }, 0);
 });
 
+// ── Modal Entrada de Stock ──────────────────────────────────────────────────
+const showStockModal  = ref(false);
+const productoActivo  = ref(null);
+const guardandoStock  = ref(false);
+const stockError      = ref('');
+const stockForm = ref({ referencia: '', cantidad: null, costo_total: null });
+
+const costoUnitario = computed(() => {
+  const total = Number(stockForm.value.costo_total) || 0;
+  const qty   = Number(stockForm.value.cantidad)    || 0;
+  return qty > 0 ? total / qty : 0;
+});
+
+const abrirEntradaStock = (p) => {
+  productoActivo.value = p;
+  stockForm.value      = { referencia: '', cantidad: null, costo_total: null };
+  stockError.value     = '';
+  showStockModal.value = true;
+};
+
+const cerrarModal = () => {
+  showStockModal.value = false;
+  productoActivo.value = null;
+};
+
+const guardarEntrada = async () => {
+  stockError.value = '';
+  if (!stockForm.value.cantidad || stockForm.value.cantidad <= 0) {
+    stockError.value = 'Ingresa una cantidad válida mayor a 0.';
+    return;
+  }
+  guardandoStock.value = true;
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_URL || ''}/api/products/${productoActivo.value.id}/entrada-stock`,
+      {
+        referencia:     stockForm.value.referencia,
+        cantidad:       stockForm.value.cantidad,
+        costo_unitario: costoUnitario.value > 0 ? costoUnitario.value : null,
+      }
+    );
+    // Actualizar stock en la lista sin recargar
+    const idx = productos.value.findIndex(p => p.id === productoActivo.value.id);
+    if (idx !== -1) productos.value[idx].stock = res.data.producto.stock;
+    cerrarModal();
+  } catch (err) {
+    stockError.value = err?.response?.data?.error || 'Error al guardar la entrada.';
+  } finally {
+    guardandoStock.value = false;
+  }
+};
+
+// ── PDF ─────────────────────────────────────────────────────────────────────
 const downloadPDF = () => {
   const doc = new jsPDF();
   const pageW = doc.internal.pageSize.getWidth();
 
-  // ── Header band ──────────────────────────────────────────────
   doc.setFillColor(...SANSAH_COLORS.negro);
   doc.rect(0, 0, pageW, 28, 'F');
-
-  // Logo Sansah
   doc.addImage(SANSAH_LOGO_B64, 'PNG', 10, 3, 52, 22);
-
-  // Título a la derecha del header
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
@@ -171,7 +354,6 @@ const downloadPDF = () => {
   doc.setFont('helvetica', 'normal');
   doc.text(`Fecha: ${new Date().toLocaleDateString('es-MX')}`, pageW - 14, 21, { align: 'right' });
 
-  // ── Sub-header info ───────────────────────────────────────────
   doc.setTextColor(...SANSAH_COLORS.negro);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
@@ -180,40 +362,27 @@ const downloadPDF = () => {
   doc.setFontSize(9);
   doc.text(`Productos listados: ${productosFiltrados.value.length}`, 14, 48);
 
-  // ── Línea separadora naranja ──────────────────────────────────
   doc.setDrawColor(...SANSAH_COLORS.naranja);
   doc.setLineWidth(1.2);
   doc.line(14, 52, pageW - 14, 52);
 
-  // ── Tabla ─────────────────────────────────────────────────────
-  const tableData = [];
-  productosFiltrados.value.forEach(p => {
-    tableData.push([
-      p.nombre,
-      p.tienda || 'General',
-      p.es_variable ? 'Variable' : 'Simple',
-      String(p.stock)
-    ]);
-  });
+  const tableData = productosFiltrados.value.map(p => [
+    p.nombre,
+    p.tienda || 'General',
+    p.es_variable ? 'Variable' : 'Simple',
+    String(p.stock ?? 0)
+  ]);
 
   autoTable(doc, {
     head: [['Producto', 'Categoría', 'Tipo', 'Unidades']],
     body: tableData,
     startY: 57,
     theme: 'grid',
-    headStyles: {
-      fillColor: SANSAH_COLORS.naranja,
-      textColor: [255, 255, 255],
-      fontStyle: 'bold',
-      fontSize: 10
-    },
+    headStyles: { fillColor: SANSAH_COLORS.naranja, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
     styles: { fontSize: 9, cellPadding: 3 },
     alternateRowStyles: { fillColor: SANSAH_COLORS.grisClaro },
-    columnStyles: {
-      3: { halign: 'right', fontStyle: 'bold' }
-    },
+    columnStyles: { 3: { halign: 'right', fontStyle: 'bold' } },
     didDrawPage: (data) => {
-      // Footer en cada página
       const pageH = doc.internal.pageSize.getHeight();
       doc.setFillColor(...SANSAH_COLORS.negro);
       doc.rect(0, pageH - 10, pageW, 10, 'F');
@@ -226,3 +395,15 @@ const downloadPDF = () => {
   doc.save(`inventario_sansah_${new Date().toISOString().split('T')[0]}.pdf`);
 };
 </script>
+
+<style scoped>
+.animate-modal-in {
+  animation: modalIn 0.2s ease-out forwards;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to       { opacity: 0; }
+</style>

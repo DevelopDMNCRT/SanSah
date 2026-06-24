@@ -7,24 +7,25 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = (product) => {
     setCartItems((prevItems) => {
-      const existing = prevItems.find((item) => item.id === product.id);
+      const cartItemId = product.cartItemId || product.id;
+      const existing = prevItems.find((item) => (item.cartItemId || item.id) === cartItemId);
       if (existing) {
         return prevItems.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          (item.cartItemId || item.id) === cartItemId ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prevItems, { ...product, quantity: 1 }];
+      return [...prevItems, { ...product, quantity: 1, cartItemId }];
     });
   };
 
-  const removeFromCart = (id) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  const removeFromCart = (identifier) => {
+    setCartItems((prevItems) => prevItems.filter((item) => (item.cartItemId || item.id) !== identifier));
   };
 
-  const updateQuantity = (id, amount) => {
+  const updateQuantity = (identifier, amount) => {
     setCartItems((prevItems) =>
       prevItems.map((item) => {
-        if (item.id === id) {
+        if ((item.cartItemId || item.id) === identifier) {
           const newQty = item.quantity + amount;
           return newQty > 0 ? { ...item, quantity: newQty } : item;
         }

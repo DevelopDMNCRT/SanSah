@@ -77,7 +77,7 @@
               
               <!-- Bottom Row -->
               <div class="mt-1 flex items-center justify-between">
-                <span class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${{ orden.costo }}</span>
+                <span class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${{ calcularTotalOrden(orden) }}</span>
                 <button @click="abrirDetalles(orden)" class="bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all text-white px-4 py-2 rounded-xl font-bold text-[13px] shadow-sm flex items-center gap-1.5">
                   Detalles <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
@@ -133,7 +133,7 @@
               <div class="mt-2 flex flex-col gap-2">
                 <div class="flex items-center justify-between px-1">
                   <span class="text-sm font-bold text-gray-500 dark:text-gray-400">Total:</span>
-                  <span class="text-lg font-black text-gray-900 dark:text-white tracking-tight">${{ orden.costo }}</span>
+                  <span class="text-lg font-black text-gray-900 dark:text-white tracking-tight">${{ calcularTotalOrden(orden) }}</span>
                 </div>
                 <div class="flex gap-2 w-full">
                   <button @click="abrirActualizarOrden(orden)" class="flex-1 bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all text-white py-2 rounded-xl font-bold text-[12px] shadow-sm flex items-center justify-center">
@@ -193,7 +193,7 @@
               </div>
               
               <div class="mt-1 flex items-center justify-between">
-                <span class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${{ orden.costo }}</span>
+                <span class="text-xl font-black text-gray-900 dark:text-white tracking-tight">${{ calcularTotalOrden(orden) }}</span>
                 <button @click="solicitarEntrega(orden)" class="bg-green-500 hover:bg-green-600 active:scale-95 transition-all text-white px-4 py-2 rounded-xl font-bold text-[13px] shadow-sm flex items-center gap-1.5">
                   Entregado <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
                 </button>
@@ -567,6 +567,12 @@ import Modal from '@/components/ui/Modal.vue';
 
 const router = useRouter();
 
+const calcularTotalOrden = (orden) => {
+  const costoBase = Number(orden.costo) || 0;
+  const costoPiezas = (orden.piezas || []).reduce((acc, p) => acc + Number(p.precio || 0), 0);
+  return (costoBase + costoPiezas).toFixed(2);
+};
+
 // Productos para el datalist
 const productosList = ref([]);
 const serviciosList = computed(() => {
@@ -778,6 +784,7 @@ const confirmarEntrega = async () => {
     localStorage.setItem('sansah_pending_service', JSON.stringify({
       id: orden.id,
       cliente: orden.cliente,
+      telefono: orden.telefono,
       bicicleta: orden.bicicleta || 'Servicio General',
       descripcion: orden.descripcion,
       costo: orden.costo,

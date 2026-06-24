@@ -85,6 +85,7 @@ router.post('/', upload.any(), async (req, res) => {
         nombre: body.nombre,
         descripcion: body.descripcion || null,
         tienda: body.tienda || null,
+        marca: body.marca || null,
         flag: body.flag || null,
         preventa_inicio: body.preventa_inicio ? new Date(body.preventa_inicio) : null,
         preventa_fin: body.preventa_fin ? new Date(body.preventa_fin) : null,
@@ -171,6 +172,7 @@ router.put('/:id', upload.any(), async (req, res) => {
         nombre: body.nombre,
         descripcion: body.descripcion || null,
         tienda: body.tienda || null,
+        marca: body.marca || null,
         flag: body.flag || null,
         preventa_inicio: body.preventa_inicio ? new Date(body.preventa_inicio) : null,
         preventa_fin: body.preventa_fin ? new Date(body.preventa_fin) : null,
@@ -212,6 +214,46 @@ router.delete('/:id', async (req, res) => {
   } catch (error) {
     console.error('Error DELETE /products/:id:', error);
     res.status(500).json({ error: 'Error al eliminar producto' });
+  }
+});
+
+// POST /api/products/:id/entrada-stock — Registrar entrada de inventario
+router.post('/:id/entrada-stock', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { referencia, cantidad, costo_unitario } = req.body;
+
+    if (!cantidad || cantidad <= 0) {
+      return res.status(400).json({ error: 'La cantidad debe ser mayor a 0' });
+    }
+
+    const product = await prisma.product.findUnique({ where: { id } });
+    if (!product) return res.status(404).json({ error: 'Producto no encontrado' });
+
+    // Registrar movimiento
+    await prisma.inventarioMovimiento.create({
+      data: {
+        product_id: id,
+        tipo: 'entrada',
+        cantidad: parseInt(cantidad),
+        costo_unitario: costo_unitario ? parseFloat(costo_unitario) : null,
+        referencia: referencia || null,
+        motivo: `Entrada manual de stock. Ref: ${referencia || 'N/A'}`,
+      }
+    });
+
+    // Actualizar stock del producto
+    const nuevoStock = (product.stock || 0) + parseInt(cantidad);
+    const updatedProduct = await prisma.product.update({
+      where: { id },
+      data: { stock: nuevoStock },
+      include: { variaciones: true }
+    });
+
+    res.json({ success: true, producto: updatedProduct });
+  } catch (error) {
+    console.error('Error POST /products/:id/entrada-stock:', error);
+    res.status(500).json({ error: 'Error al registrar entrada de stock' });
   }
 });
 

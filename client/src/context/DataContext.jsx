@@ -38,9 +38,13 @@ export const DataProvider = ({ children }) => {
           id: p.id,
           title: p.nombre,
           category: p.tienda || 'General',
-          price: `$${parseFloat(p.precio).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+          price: p.precio !== null && p.precio !== undefined
+            ? `$${parseFloat(p.precio).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            : (p.variaciones && p.variaciones.length > 0 
+                ? `$${parseFloat(p.variaciones[0].precio).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                : 'No disponible'),
           img: p.imagen_url || 'https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?q=80&w=2070&auto=format&fit=crop',
-          badge: p.destacado ? 'DESTACADO' : (p.estado === 'Agotado' ? 'AGOTADO' : null),
+          badge: p.destacado ? 'DESTACADO' : (p.estado === 'Agotado' || p.stock === 0 ? 'AGOTADO' : null),
           raw: p
         }));
         setProducts(mappedProducts);
