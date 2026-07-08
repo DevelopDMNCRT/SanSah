@@ -5,7 +5,7 @@
       <!-- Page Header & Store Selector -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Reporte de Ventas</h1>
+          <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">Estadísticas</h1>
         </div>
         
         <div class="flex items-center gap-3">

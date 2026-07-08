@@ -5,9 +5,9 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <router-link to="/productos" class="flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <button @click="handleBack" type="button" class="flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </router-link>
+          </button>
           <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">
             {{ isEditing ? 'Editar Producto' : 'Nuevo Producto' }}
           </h1>
@@ -32,12 +32,12 @@
             <!-- Nombre -->
             <div>
               <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">Nombre del producto</label>
-              <input v-model="form.nombre" type="text" placeholder="Ej. Playera Tour 2026"
+              <input v-model="form.nombre" type="text" placeholder="Ej. Bicicleta Trek Marlin 7"
                 class="w-full h-11 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white/90 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
               <!-- Slug Preview -->
               <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                Enlace: <span class="text-brand-600 dark:text-brand-400 font-mono">https://amigo-merch.vercel.app/producto/{{ slug }}</span>
+                Enlace: <span class="text-brand-600 dark:text-brand-400 font-mono">https://sansah.mx/producto/{{ slug }}</span>
               </p>
             </div>
 
@@ -816,13 +816,23 @@ const guardar = async () => {
     fd.append('existing_galeria', JSON.stringify(existingGaleriaUrls));
     newGaleriaFiles.forEach(file => fd.append('galeria', file));
 
+    let savedProduct = null;
     if (isEditing.value) {
-      await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/products/${route.params.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/products/${route.params.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      savedProduct = res.data;
     } else {
-      await axios.post((import.meta.env.VITE_API_URL || '') + '/api/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const res = await axios.post((import.meta.env.VITE_API_URL || '') + '/api/products', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      savedProduct = res.data;
     }
 
-    router.push('/productos');
+    if (sessionStorage.getItem('sansah_pending_compra')) {
+      if (savedProduct && savedProduct.id) {
+        sessionStorage.setItem('sansah_newly_created_product_id', String(savedProduct.id));
+      }
+      router.push('/compras/nueva');
+    } else {
+      router.push('/productos');
+    }
   } catch (err) {
     console.error('Error saving product:', err);
     const details = err.response?.data?.details || '';
@@ -830,6 +840,14 @@ const guardar = async () => {
     alert(`${errorMsg}\n${details}`);
   } finally {
     guardando.value = false;
+  }
+};
+
+const handleBack = () => {
+  if (sessionStorage.getItem('sansah_pending_compra')) {
+    router.push('/compras/nueva');
+  } else {
+    router.push('/productos');
   }
 };
 </script>

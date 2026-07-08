@@ -13,6 +13,8 @@ const tallerRouter     = require('./routes/taller');
 const reportesRouter   = require('./routes/reportes');
 const mercadopagoRouter= require('./routes/mercadopago');
 const gastosRouter     = require('./routes/gastos');
+const corteRouter       = require('./routes/corte');
+const comprasRouter     = require('./routes/compras');
 const { router: authRouter } = require('./routes/auth');
 
 const app  = express();
@@ -37,6 +39,8 @@ app.use('/api/taller',     tallerRouter);
 app.use('/api/reportes',   reportesRouter);
 app.use('/api/mercadopago',mercadopagoRouter);
 app.use('/api/gastos',     gastosRouter);
+app.use('/api/corte',      corteRouter);
+app.use('/api/compras',    comprasRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {

@@ -8,7 +8,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/pedidos',
+      redirect: '/reporte',
     },
     {
       path: '/usuarios',
@@ -68,10 +68,34 @@ const router = createRouter({
     },
     {
       path: '/reporte',
-      name: 'Reporte',
+      name: 'Estadisticas',
       component: () => import('../views/Reporte.vue'),
       meta: {
-        title: 'Reporte',
+        title: 'Estadísticas',
+      },
+    },
+    {
+      path: '/corte',
+      name: 'Corte',
+      component: () => import('../views/Corte/CorteView.vue'),
+      meta: {
+        title: 'Corte de Caja',
+      },
+    },
+    {
+      path: '/compras',
+      name: 'Compras',
+      component: () => import('../views/Compras/ComprasView.vue'),
+      meta: {
+        title: 'Compras',
+      },
+    },
+    {
+      path: '/compras/nueva',
+      name: 'CompraNueva',
+      component: () => import('../views/Compras/ComprasForm.vue'),
+      meta: {
+        title: 'Nueva Compra',
       },
     },
     {
@@ -181,10 +205,10 @@ export default router
 const PUBLIC_ROUTES = ['/signin', '/signup', '/error-404']
 
 router.beforeEach((to, _from, next) => {
-  document.title = `${to.meta.title} | Amigo Merch Admin`
+  document.title = to.meta.title ? `${to.meta.title} | SanSah Admin` : 'SanSah Admin'
   const token = localStorage.getItem('amigo_admin_token')
   const isPublic = PUBLIC_ROUTES.includes(to.path as string)
-  
+
   if (!token && !isPublic) {
     next('/signin')
   } else if (token && to.path === '/signin') {

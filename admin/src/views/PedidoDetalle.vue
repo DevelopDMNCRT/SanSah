@@ -10,8 +10,15 @@
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </router-link>
-        <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90">
-          Pedido <span class="text-brand-500 font-mono">#{{ pedido.orden }}</span>
+        <h1 class="text-xl font-semibold text-gray-800 dark:text-white/90 flex items-center gap-2 flex-wrap">
+          Venta <span class="text-brand-500 font-mono">#{{ pedido.orden }}</span>
+          
+          <span v-if="pedido.canal_venta === 'Tienda en Línea'" class="rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400">
+            Venta en Línea
+          </span>
+          <span v-else class="rounded-full px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400">
+            POS / Mostrador
+          </span>
         </h1>
       </div>
 
@@ -21,7 +28,7 @@
         <!-- ═══ LEFT CARD: Datos del pedido ═══ -->
         <div class="col-span-12 lg:col-span-8 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
           <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-            <h2 class="text-base font-semibold text-gray-800 dark:text-white/90">Información del Pedido</h2>
+            <h2 class="text-base font-semibold text-gray-800 dark:text-white/90">Información de la Venta</h2>
           </div>
 
           <div class="px-6 py-6 space-y-6">
@@ -65,6 +72,7 @@
                     <option value="Pendiente">Pendiente</option>
                     <option value="En proceso">En proceso</option>
                     <option value="Cancelado">Cancelado</option>
+                    <option value="Devuelto">Devuelto</option>
                     <option value="Rembolsado">Rembolsado</option>
                     <option value="Fallido">Fallido</option>
                     <option value="Completado">Completado</option>
@@ -111,6 +119,18 @@
                 {{ pedido.nota }}
               </div>
               <p v-else class="text-sm text-gray-400 dark:text-gray-500 italic">Sin notas.</p>
+            </div>
+
+            <!-- Devolución Button -->
+            <div v-if="pedido.estado !== 'Devuelto' && pedido.estado !== 'Cancelado'" class="flex justify-end pt-4 border-t border-gray-100 dark:border-gray-800">
+              <button
+                @click="showDevolucionConfirm = true"
+                class="px-5 py-2.5 rounded-xl text-white font-bold text-sm shadow-theme-xs transition flex items-center gap-2 hover:opacity-90"
+                style="background-color: #ff6a00 !important; color: #ffffff !important;"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 9.5 3m-7.2 9.5A10 10 0 0 0 14.5 21"/></svg>
+                Devolución
+              </button>
             </div>
 
           </div>
@@ -192,12 +212,52 @@
       </div>
     </transition>
   </Teleport>
+
+  <!-- Devolución Confirmation Modal -->
+  <Teleport to="body">
+    <div v-if="showDevolucionConfirm" class="fixed inset-0 z-[999999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" @click.self="closeDevolucionModal">
+      <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-800 overflow-hidden animate-modal-in">
+        <div class="p-6">
+          <h3 class="text-lg font-bold text-gray-900 dark:text-white">Confirmar Devolución</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Esta acción regresará los productos de esta orden al inventario y marcará la venta como devuelta.
+          </p>
+          <p v-if="devolucionError" class="text-xs font-semibold text-error-500 mt-2">
+            {{ devolucionError }}
+          </p>
+        </div>
+        
+        <div class="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/30 flex justify-end gap-3">
+          <button
+            @click="closeDevolucionModal"
+            type="button"
+            class="px-4 py-2 text-xs font-bold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            @click="confirmDevolucion"
+            :disabled="submittingDevolucion"
+            type="button"
+            class="px-5 py-2 text-xs font-bold text-white rounded-lg transition-colors disabled:opacity-50 hover:opacity-90"
+            style="background-color: #ff6a00 !important; color: #ffffff !important;"
+          >
+            <span v-if="submittingDevolucion">Procesando...</span>
+            <span v-else>Confirmar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import AdminLayout from '@/components/layout/AdminLayout.vue';
+import { useAuth } from '@/composables/useAuth';
+
+const { admin } = useAuth();
 
 const route = useRoute();
 const pedido = ref(null);
@@ -288,6 +348,47 @@ const guardarEstado = async () => {
 
 
 
+const showDevolucionConfirm = ref(false);
+const submittingDevolucion = ref(false);
+const devolucionError = ref('');
+
+const closeDevolucionModal = () => {
+  showDevolucionConfirm.value = false;
+  devolucionError.value = '';
+};
+
+const confirmDevolucion = async () => {
+  submittingDevolucion.value = true;
+  devolucionError.value = '';
+  
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/pedidos/${pedido.value.id}/devolucion`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al procesar la devolución');
+    
+    pedido.value.estado = 'Devuelto';
+    estadoPendiente.value = 'Devuelto';
+    showToast('success', 'Devolución realizada exitosamente y stock reingresado.');
+    closeDevolucionModal();
+  } catch (err) {
+    console.error(err);
+    devolucionError.value = err.message;
+  } finally {
+    submittingDevolucion.value = false;
+  }
+};
+
+const esTaller = computed(() => {
+  if (!pedido.value) return false;
+  return pedido.value.canal_venta === 'Taller' || 
+         (pedido.value.canal_venta === 'POS' && 
+          pedido.value.items.some(item => (item.nombre || '').toLowerCase().includes('servicio:')));
+});
+
 const totalItems = computed(() => pedido.value?.items.reduce((s, x) => s + x.cantidad, 0) ?? 0);
 const subtotal   = computed(() => pedido.value?.items.reduce((s, x) => s + (x.precio * x.cantidad), 0) ?? 0);
 
@@ -299,6 +400,7 @@ const estadoTextClase = (estado) => {
     'Completado': 'text-success-600 dark:text-success-500',
     'Fallido':    'text-error-600 dark:text-error-500',
     'Cancelado':  'text-gray-500 dark:text-gray-400',
+    'Devuelto':   'text-red-500 dark:text-red-400',
     'Rembolsado': 'text-purple-600 dark:text-purple-400',
   };
   return m[estado] ?? '';

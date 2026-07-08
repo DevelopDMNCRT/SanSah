@@ -82,15 +82,13 @@
                 </td>
                 <!-- Stock — clickeable -->
                 <td class="px-5 py-4 sm:px-6">
-                  <button
+                  <span
                     v-if="!p.es_variable"
-                    @click="abrirEntradaStock(p)"
-                    :class="(p.stock ?? 0) > 10 ? 'text-success-600 dark:text-success-500 hover:underline' : (p.stock ?? 0) > 0 ? 'text-warning-600 dark:text-warning-400 hover:underline' : 'text-error-500 hover:underline'"
-                    class="text-theme-sm font-medium cursor-pointer transition-opacity hover:opacity-70"
-                    title="Clic para registrar entrada de stock"
+                    :class="(p.stock ?? 0) > 10 ? 'text-success-600 dark:text-success-500' : (p.stock ?? 0) > 0 ? 'text-warning-600 dark:text-warning-400' : 'text-error-500'"
+                    class="text-theme-sm font-medium"
                   >
                     {{ (p.stock ?? 0) > 0 ? p.stock : 'Sin stock' }}
-                  </button>
+                  </span>
                   <span v-else class="text-theme-sm font-medium text-blue-light-600 dark:text-blue-light-400">
                     {{ (p.variaciones && p.variaciones.length > 0) ? `${p.variaciones.length} var.` : '—' }}
                   </span>

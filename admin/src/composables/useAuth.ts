@@ -8,9 +8,13 @@ const admin = ref<{ id: number; username: string; email: string } | null>(null)
 export function useAuth() {
   const isAuthenticated = computed(() => !!token.value)
 
-  function setToken(t: string, user: typeof admin.value) {
+  function setToken(t: string, user: any) {
     token.value = t
-    admin.value = user
+    admin.value = user ? {
+      id: user.id,
+      username: user.nombre || user.username || 'Admin',
+      email: user.correo || user.email || ''
+    } : null
     localStorage.setItem(TOKEN_KEY, t)
   }
 
@@ -42,7 +46,8 @@ export function useAuth() {
       })
       if (!res.ok) { clearAuth(); return false }
       const data = await res.json()
-      admin.value = data.user
+      const userObj = data.user || data
+      setToken(token.value!, userObj)
       return true
     } catch {
       clearAuth()

@@ -182,3 +182,31 @@ model Gasto {
   @@map("gastos")
 }
 
+model Compra {
+  id          Int          @id @default(autoincrement())
+  factura     String
+  proveedor   String
+  forma_pago  String
+  fecha       DateTime
+  total       Float
+  items       CompraItem[]
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+
+  @@map("compras")
+}
+
+model CompraItem {
+  id              Int      @id @default(autoincrement())
+  compra_id       Int
+  cantidad        Int
+  producto        String
+  precio_unitario Float
+  iva             Float
+  descuento       Float    @default(0)
+  product_id      Int?
+  compra          Compra   @relation(fields: [compra_id], references: [id], onDelete: Cascade)
+
+  @@map("compra_items")
+}
+

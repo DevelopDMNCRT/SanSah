@@ -229,6 +229,11 @@ const menuGroups = [
     title: "Administrador",
     items: [
       {
+        icon: ListIcon,
+        name: "Estadísticas",
+        path: "/reporte",
+      },
+      {
         icon: UserGroupIcon,
         name: "Usuarios",
         path: "/usuarios",
@@ -244,14 +249,19 @@ const menuGroups = [
         path: "/tiendas",
       },
       {
-        icon: ListIcon,
-        name: "Pedidos",
-        path: "/pedidos",
-      },
-      {
         icon: BoxCubeIcon,
         name: "Inventario",
         path: "/inventario",
+      },
+      {
+        icon: BoxIcon,
+        name: "Compras",
+        path: "/compras",
+      },
+      {
+        icon: UserCircleIcon,
+        name: "Clientes",
+        path: "/clientes",
       },
       {
         icon: TableIcon,
@@ -264,9 +274,9 @@ const menuGroups = [
         path: "/taller",
       },
       {
-        icon: UserCircleIcon,
-        name: "Clientes",
-        path: "/clientes",
+        icon: ListIcon,
+        name: "Ventas",
+        path: "/pedidos",
       },
       {
         icon: PieChartIcon,
@@ -274,9 +284,9 @@ const menuGroups = [
         path: "/gastos",
       },
       {
-        icon: ListIcon,
-        name: "Reporte",
-        path: "/reporte",
+        icon: TableIcon,
+        name: "Corte",
+        path: "/corte",
       },
     ],
   },

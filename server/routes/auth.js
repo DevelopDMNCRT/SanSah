@@ -16,8 +16,15 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { correo }
+    const hasAt = correo.includes('@');
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { correo: { equals: correo, mode: 'insensitive' } },
+          { nombre: { equals: correo, mode: 'insensitive' } },
+          ...(hasAt ? [] : [{ correo: { startsWith: correo + '@', mode: 'insensitive' } }])
+        ]
+      }
     });
 
     if (!user) {

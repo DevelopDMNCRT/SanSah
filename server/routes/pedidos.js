@@ -84,32 +84,96 @@ router.post('/', async (req, res) => {
 
     const orden = await generarOrden();
 
-    const pedido = await prisma.pedido.create({
-      data: {
-        orden,
-        cliente_id: cliente.id,
-        nombre: nombreReal,
-        correo: emailReal,
-        telefono: telefono || null,
-        ciudad: ciudad || null,
-        domicilio: domicilio || null,
-        notas: notas || null,
-        estado: estado || 'Nuevo',
-        envio: parseFloat(envio) || 0,
-        total: parseFloat(total),
-        metodo_pago: metodo_pago || 'Tarjeta de Crédito',
-        canal_venta: canal_venta || 'Tienda en Línea',
-        items: {
-          create: (items || []).map(item => ({
-            nombre: item.nombre,
-            variante: item.variante || null,
-            cantidad: parseInt(item.cantidad) || 1,
-            precio: parseFloat(item.precio),
-            imagen: item.imagen || null,
-          }))
+    const pedido = await prisma.$transaction(async (tx) => {
+      const pObj = await tx.pedido.create({
+        data: {
+          orden,
+          cliente_id: cliente.id,
+          nombre: nombreReal,
+          correo: emailReal,
+          telefono: telefono || null,
+          ciudad: ciudad || null,
+          domicilio: domicilio || null,
+          notas: notas || null,
+          estado: estado || 'Nuevo',
+          envio: parseFloat(envio) || 0,
+          total: parseFloat(total),
+          metodo_pago: metodo_pago || 'Tarjeta de Crédito',
+          canal_venta: canal_venta || 'POS',
+          items: {
+            create: (items || []).map(item => ({
+              nombre: item.nombre,
+              variante: item.variante || null,
+              cantidad: parseInt(item.cantidad) || 1,
+              precio: parseFloat(item.precio),
+              imagen: item.imagen || null,
+            }))
+          }
+        },
+        include: { items: true }
+      });
+
+      // Descontar stock para cada producto vendido
+      for (const item of pObj.items) {
+        const prod = await tx.product.findFirst({
+          where: { nombre: item.nombre },
+          include: { variaciones: true }
+        });
+
+        if (prod) {
+          const qty = parseInt(item.cantidad) || 1;
+          
+          if (prod.es_variable) {
+            if (item.variante) {
+              const variation = prod.variaciones.find(v => v.valor === item.variante);
+              if (variation) {
+                // Descontar stock de la variación
+                await tx.productVariation.update({
+                  where: { id: variation.id },
+                  data: {
+                    stock: {
+                      decrement: qty
+                    }
+                  }
+                });
+
+                // Registrar movimiento de salida
+                await tx.inventarioMovimiento.create({
+                  data: {
+                    product_id: prod.id,
+                    tipo: 'salida',
+                    cantidad: qty,
+                    referencia: orden,
+                    motivo: `Venta #${orden} (Variación: ${variation.valor})`,
+                  }
+                });
+              }
+            }
+          } else {
+            // Producto simple: descontar stock
+            const currentStock = prod.stock || 0;
+            await tx.product.update({
+              where: { id: prod.id },
+              data: {
+                stock: Math.max(0, currentStock - qty)
+              }
+            });
+
+            // Registrar movimiento de salida
+            await tx.inventarioMovimiento.create({
+              data: {
+                product_id: prod.id,
+                tipo: 'salida',
+                cantidad: qty,
+                referencia: orden,
+                motivo: `Venta #${orden}`,
+              }
+            });
+          }
         }
-      },
-      include: { items: true }
+      }
+
+      return pObj;
     });
 
     res.status(201).json(pedido);
@@ -178,6 +242,98 @@ router.put('/:id/estado', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al actualizar estado' });
+  }
+});
+
+// POST /api/pedidos/:id/devolucion  — Procesar devolución de una venta
+router.post('/:id/devolucion', async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  try {
+
+    // 3. Obtener pedido
+    const pedido = await prisma.pedido.findUnique({
+      where: { id },
+      include: { items: true }
+    });
+
+    if (!pedido) {
+      return res.status(404).json({ error: 'Venta no encontrada' });
+    }
+
+    if (pedido.estado === 'Cancelado' || pedido.estado === 'Devuelto') {
+      return res.status(400).json({ error: 'Esta venta ya fue devuelta o cancelada' });
+    }
+
+    // 4. Cambiar estado a Devuelto y regresar mercancía al stock en una transacción
+    await prisma.$transaction(async (tx) => {
+      await tx.pedido.update({
+        where: { id },
+        data: { estado: 'Devuelto' }
+      });
+
+      for (const item of pedido.items) {
+        // Encontrar producto por nombre para regresar stock
+        const prod = await tx.product.findFirst({
+          where: { nombre: item.nombre },
+          include: { variaciones: true }
+        });
+
+        if (prod) {
+          if (prod.es_variable) {
+            // Si es variable, buscar la variación que coincida
+            if (item.variante) {
+              const variation = prod.variaciones.find(v => v.valor === item.variante);
+              if (variation) {
+                await tx.productVariation.update({
+                  where: { id: variation.id },
+                  data: {
+                    stock: {
+                      increment: item.cantidad
+                    }
+                  }
+                });
+
+                await tx.inventarioMovimiento.create({
+                  data: {
+                    product_id: prod.id,
+                    tipo: 'entrada',
+                    cantidad: item.cantidad,
+                    referencia: pedido.orden,
+                    motivo: `Devolución de Venta #${pedido.orden} (Variación: ${variation.valor})`,
+                  }
+                });
+              }
+            }
+          } else {
+            // Si es simple, creamos un movimiento de entrada y actualizamos stock del producto
+            await tx.inventarioMovimiento.create({
+              data: {
+                product_id: prod.id,
+                tipo: 'entrada',
+                cantidad: item.cantidad,
+                referencia: pedido.orden,
+                motivo: `Devolución de Venta #${pedido.orden}`,
+              }
+            });
+
+            const currentStock = prod.stock || 0;
+            await tx.product.update({
+              where: { id: prod.id },
+              data: {
+                stock: currentStock + item.cantidad
+              }
+            });
+          }
+        }
+      }
+    });
+
+    res.json({ success: true, message: 'Devolución procesada exitosamente' });
+
+  } catch (error) {
+    console.error('Error al procesar devolución:', error);
+    res.status(500).json({ error: 'Error del servidor al procesar la devolución' });
   }
 });
 
