@@ -117,9 +117,9 @@ npm run dev
 
 ## 🔒 Autenticación en el Administrador
 Para iniciar sesión en el panel `/admin`, el endpoint permite credenciales flexibles:
-*   Puedes usar indistintamente tu **Correo Electrónico** o tu **Nombre de Usuario**.
+*   Puedes usar indistintamente tu **Correo Electrónico** o tu **Nombre de Usuario**
 *   La búsqueda de usuario es insensible a mayúsculas y minúsculas para mayor comodidad del personal.
-*   Soporte para usar el prefijo de tu correo electrónico (ej. `yay` en lugar de `yay@ejemplo.com`).
+*   Soporte para usar el prefijo de tu correo electrónico.
 
 ---
 
