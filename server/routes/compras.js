@@ -84,12 +84,10 @@ router.post('/', async (req, res) => {
               nombre: item.producto.trim(),
               stock: qty,
               costo_real: price, // Guardamos el costo real
-              precio: price, // Precio de venta inicial
               es_publico: false, // Forma privada
               es_publico_pos: false, // Forma privada
               slug: uniqueSlug,
               descripcion: `Producto ingresado automáticamente mediante Compra Factura: ${factura}`,
-              tienda: 'General', // Categoría por defecto
             }
           });
           prodId = newProduct.id;
