@@ -52,6 +52,8 @@ router.post('/', async (req, res) => {
   try {
     // Ejecutar todo en una transacción para asegurar consistencia
     const result = await prisma.$transaction(async (tx) => {
+      let nuevosProductosCreados = 0;
+
       // 1. Crear registro de Compra
       const compra = await tx.compra.create({
         data: {
@@ -74,16 +76,24 @@ router.post('/', async (req, res) => {
 
         // Si prodId es null y el nombre es válido, lo creamos automáticamente
         if (!prodId && item.producto && item.producto.trim().length > 0) {
+          const baseSlug = item.producto.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          const uniqueSlug = `${baseSlug || 'producto'}-${Date.now()}`;
+
           const newProduct = await tx.product.create({
             data: {
               nombre: item.producto.trim(),
               stock: qty,
-              precio: price, // Usamos el precio de la compra como precio de venta base
+              costo_real: price, // Guardamos el costo real
+              precio: price, // Precio de venta inicial
+              es_publico: false, // Forma privada
+              es_publico_pos: false, // Forma privada
+              slug: uniqueSlug,
               descripcion: `Producto ingresado automáticamente mediante Compra Factura: ${factura}`,
               tienda: 'General', // Categoría por defecto
             }
           });
           prodId = newProduct.id;
+          nuevosProductosCreados++;
 
           // Registrar movimiento de entrada
           await tx.inventarioMovimiento.create({
@@ -169,7 +179,10 @@ router.post('/', async (req, res) => {
         });
       }
 
-      return compra;
+      return {
+        compra,
+        nuevosProductosCreados
+      };
     });
 
     res.status(201).json(result);

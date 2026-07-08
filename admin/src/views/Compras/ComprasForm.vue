@@ -267,6 +267,44 @@
       </div>
     </div>
 
+    <!-- New Products Confirmation Modal -->
+    <Teleport to="body">
+      <div v-if="showSuccessModal" class="fixed inset-0 z-[999999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" @click.self="closeSuccessModal">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-800 overflow-hidden animate-modal-in">
+          <div class="p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-amber-50 dark:bg-amber-500/10 mb-4">
+              <svg class="h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Productos Creados</h3>
+            
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              <span class="font-bold text-brand-500">{{ newProductsCount }}</span> {{ newProductsCount === 1 ? 'producto' : 'productos' }} de la nueva compra no se encuentran en nuestra base de datos y han sido creados en su forma más básica.
+            </p>
+          </div>
+          
+          <div class="p-6 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/30 flex gap-3">
+            <button
+              @click="closeSuccessModal"
+              type="button"
+              class="flex-1 py-2.5 text-sm font-semibold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              Aceptar
+            </button>
+            <button
+              @click="goToProducts"
+              type="button"
+              class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl bg-brand-500 hover:bg-brand-600 transition-colors shadow-theme-xs"
+            >
+              Ir a productos
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
   </AdminLayout>
 </template>
 
@@ -301,6 +339,19 @@ const loading = ref(true)
 const submitting = ref(false)
 
 const activeRowIndex = ref(null)
+
+const showSuccessModal = ref(false)
+const newProductsCount = ref(0)
+
+const closeSuccessModal = () => {
+  showSuccessModal.value = false
+  router.push('/compras')
+}
+
+const goToProducts = () => {
+  showSuccessModal.value = false
+  router.push('/productos')
+}
 
 const fetchInitialData = async () => {
   try {
@@ -467,8 +518,15 @@ const submitCompra = async () => {
       }))
     }
 
-    await axios.post(`${API_URL}/api/compras`, payload)
-    router.push('/compras')
+    const res = await axios.post(`${API_URL}/api/compras`, payload)
+    const nuevosCount = res.data.nuevosProductosCreados || 0
+    
+    if (nuevosCount > 0) {
+      newProductsCount.value = nuevosCount
+      showSuccessModal.value = true
+    } else {
+      router.push('/compras')
+    }
 
   } catch (error) {
     console.error('Error saving purchase:', error)
