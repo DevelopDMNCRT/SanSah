@@ -69,24 +69,35 @@ router.post('/', async (req, res) => {
         const price = parseFloat(item.precioUnitario);
         const iva = parseFloat(item.iva) || 0;
         const discount = parseFloat(item.descuento) || 0;
-        const prodId = item.productId ? parseInt(item.productId) : null;
+        let prodId = item.productId ? parseInt(item.productId) : null;
         const varId = item.variationId ? parseInt(item.variationId) : null;
 
-        // Guardar ítem en compras_detalles
-        await tx.compraItem.create({
-          data: {
-            compra_id: compra.id,
-            cantidad: qty,
-            producto: item.producto,
-            precio_unitario: price,
-            iva,
-            descuento: discount,
-            product_id: prodId
-          }
-        });
+        // Si prodId es null y el nombre es válido, lo creamos automáticamente
+        if (!prodId && item.producto && item.producto.trim().length > 0) {
+          const newProduct = await tx.product.create({
+            data: {
+              nombre: item.producto.trim(),
+              stock: qty,
+              precio: price, // Usamos el precio de la compra como precio de venta base
+              descripcion: `Producto ingresado automáticamente mediante Compra Factura: ${factura}`,
+              tienda: 'General', // Categoría por defecto
+            }
+          });
+          prodId = newProduct.id;
 
-        // Si el ítem está vinculado a un producto existente, sumamos stock
-        if (prodId) {
+          // Registrar movimiento de entrada
+          await tx.inventarioMovimiento.create({
+            data: {
+              product_id: prodId,
+              tipo: 'entrada',
+              cantidad: qty,
+              costo_unitario: price,
+              referencia: factura,
+              motivo: `Compra Factura: ${factura} (Creación Automática)`,
+              forma_pago: formaPago
+            }
+          });
+        } else if (prodId) {
           const product = await tx.product.findUnique({
             where: { id: prodId },
             include: { variaciones: true }
@@ -143,6 +154,19 @@ router.post('/', async (req, res) => {
             }
           }
         }
+
+        // Guardar ítem en compras_detalles vinculado al ID correcto
+        await tx.compraItem.create({
+          data: {
+            compra_id: compra.id,
+            cantidad: qty,
+            producto: item.producto,
+            precio_unitario: price,
+            iva,
+            descuento: discount,
+            product_id: prodId
+          }
+        });
       }
 
       return compra;

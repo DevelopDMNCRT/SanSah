@@ -145,15 +145,13 @@
                           Existente
                         </span>
                         
-                        <button
+                        <span
                           v-else-if="item.producto.trim().length > 0"
-                          @click="navigateToCreateProduct(index)"
-                          type="button"
-                          class="shrink-0 px-2 py-1 rounded text-[10px] font-bold bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400 hover:bg-orange-100 transition-colors"
-                          title="Dar de alta nuevo producto"
+                          class="shrink-0 px-2 py-1 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
+                          title="Se creará automáticamente al guardar la factura"
                         >
-                          + Crear Nuevo
-                        </button>
+                          Nuevo
+                        </span>
                       </div>
 
                       <!-- Variation Selector if variable product -->
@@ -395,11 +393,7 @@ const selectProduct = (index, product) => {
   item.showDropdown = false
 }
 
-const navigateToCreateProduct = (index) => {
-  sessionStorage.setItem('sansah_pending_compra', JSON.stringify(formData))
-  sessionStorage.setItem('sansah_pending_compra_row', String(index))
-  router.push('/productos/nuevo')
-}
+
 
 // Totals Calculation
 const calculateRowTotal = (item) => {
@@ -486,39 +480,7 @@ const submitCompra = async () => {
 
 onMounted(async () => {
   await fetchInitialData()
-
-  const savedCompra = sessionStorage.getItem('sansah_pending_compra')
-  if (savedCompra) {
-    try {
-      const parsed = JSON.parse(savedCompra)
-      formData.factura = parsed.factura || ''
-      formData.proveedor = parsed.proveedor || ''
-      formData.formaPago = parsed.formaPago || 'Efectivo'
-      formData.fecha = parsed.fecha || new Date().toISOString().split('T')[0]
-      formData.items = parsed.items || []
-
-      const newProdId = sessionStorage.getItem('sansah_newly_created_product_id')
-      const activeRowIndexVal = sessionStorage.getItem('sansah_pending_compra_row')
-      
-      if (newProdId && activeRowIndexVal !== null) {
-        const rowIndex = Number(activeRowIndexVal)
-        const pId = Number(newProdId)
-        const product = catalogProducts.value.find(p => p.id === pId)
-        if (product && formData.items[rowIndex]) {
-          selectProduct(rowIndex, product)
-        }
-      }
-    } catch (e) {
-      console.error('Error restoring pending purchase:', e)
-      addItemRow()
-    } finally {
-      sessionStorage.removeItem('sansah_pending_compra')
-      sessionStorage.removeItem('sansah_pending_compra_row')
-      sessionStorage.removeItem('sansah_newly_created_product_id')
-    }
-  } else {
-    addItemRow()
-  }
+  addItemRow()
 })
 </script>
 

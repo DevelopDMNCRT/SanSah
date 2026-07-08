@@ -825,14 +825,7 @@ const guardar = async () => {
       savedProduct = res.data;
     }
 
-    if (sessionStorage.getItem('sansah_pending_compra')) {
-      if (savedProduct && savedProduct.id) {
-        sessionStorage.setItem('sansah_newly_created_product_id', String(savedProduct.id));
-      }
-      router.push('/compras/nueva');
-    } else {
-      router.push('/productos');
-    }
+    router.push('/productos');
   } catch (err) {
     console.error('Error saving product:', err);
     const details = err.response?.data?.details || '';
@@ -844,11 +837,7 @@ const guardar = async () => {
 };
 
 const handleBack = () => {
-  if (sessionStorage.getItem('sansah_pending_compra')) {
-    router.push('/compras/nueva');
-  } else {
-    router.push('/productos');
-  }
+  router.push('/productos');
 };
 </script>
 
