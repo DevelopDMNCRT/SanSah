@@ -117,5 +117,24 @@ npm run dev
 
 ## 🔒 Autenticación en el Administrador
 Para iniciar sesión en el panel `/admin`, el endpoint permite credenciales flexibles:
-*   Puedes usar indistintamente tu **Correo Electrónico** o tu **Nombre de Usuario** (ej. `"Yael"` o `"yay@ejemplo.com"`).
+*   Puedes usar indistintamente tu **Correo Electrónico** o tu **Nombre de Usuario**.
 *   La búsqueda de usuario es insensible a mayúsculas y minúsculas para mayor comodidad del personal.
+*   Soporte para usar el prefijo de tu correo electrónico (ej. `yay` en lugar de `yay@ejemplo.com`).
+
+---
+
+## ✨ Últimas Funcionalidades Implementadas
+
+A continuación se detallan las mejoras clave agregadas recientemente al proyecto:
+
+*   **📅 Corte Diario Dinámico:** Creación de la sección **Corte** en el panel de administrador. Muestra ingresos en tiempo real agrupados por *Tarjetas*, *Transferencias*, *Efectivo* y *Sitio Web*, con opción de filtrado para seleccionar fechas exactas.
+*   **🧾 Gestión de Compras/Facturas:** Módulo para el registro de compras, ingresando el proveedor, número de factura, forma de pago y fecha. Cuenta con buscador de productos inteligente por autocompletado y un visualizador de detalles mediante un botón con icono de lápiz.
+*   **📦 Sincronización Automática de Inventario:**
+    *   Al registrar **Compras**, se incrementa automáticamente el stock del producto simple (`Product.stock`) o de su respectiva variación (`ProductVariation.stock`).
+    *   Al registrar **Ventas** (tanto desde la tienda en línea como en caja por **POS**), se decrementan las unidades vendidas en tiempo real de la base de datos y se registra una `'salida'` en el historial de movimientos de inventario (`InventarioMovimiento`).
+    *   Al realizar **Devoluciones**, se reingresan las unidades del pedido directamente al inventario, registrando una `'entrada'`.
+    *   **Robustez de Stock:** Soporte para productos que se encuentran inicialmente sin stock (`stock: null`), permitiendo que las compras y devoluciones sumen correctamente desde cero en lugar de generar errores matemáticos de SQL.
+*   **🔓 Devoluciones Simplificadas:** Modificación del modal de confirmación de devolución de un pedido para que no requiera ingresar la contraseña del administrador, facilitando un flujo operativo rápido.
+*   **🔑 Login con credenciales flexibles:** Capacidad de iniciar sesión tanto con el correo electrónico como con el nombre del usuario (insensible a mayúsculas/minúsculas) o el prefijo de email antes del `@`.
+*   **🗺️ Barra Lateral Personalizada:** Reordenamiento estético y funcional del menú de navegación del panel administrativo de acuerdo a la prioridad del negocio.
+
