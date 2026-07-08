@@ -145,13 +145,7 @@
                           Existente
                         </span>
                         
-                        <span
-                          v-else-if="item.producto.trim().length > 0"
-                          class="shrink-0 px-2 py-1 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
-                          title="Se creará automáticamente al guardar la factura"
-                        >
-                          Nuevo
-                        </span>
+
                       </div>
 
                       <!-- Variation Selector if variable product -->
