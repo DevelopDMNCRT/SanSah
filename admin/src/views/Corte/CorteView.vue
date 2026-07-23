@@ -6,18 +6,34 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 class="text-xl font-bold text-gray-800 dark:text-white/90">Corte de Caja</h1>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Resumen diario de ingresos por método de pago y canal</p>
         </div>
 
-        <!-- Date Filter -->
-        <div class="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl border border-gray-100 dark:border-gray-700 shadow-theme-xs max-w-xs">
-          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-          <flat-pickr
-            v-model="selectedDate"
-            :config="dateConfig"
-            class="bg-transparent border-none text-sm font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-0 cursor-pointer w-28 text-center"
-            placeholder="Seleccionar fecha"
-          />
+        <!-- Filters (Cashier & Date) -->
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Selector de Cajero (Solo Admin) -->
+          <div v-if="esAdmin && cajeros.length" class="flex items-center gap-2 bg-white dark:bg-gray-800 px-3 py-2 rounded-xl border border-gray-100 dark:border-gray-700 shadow-theme-xs">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            <select
+              v-model="selectedCajero"
+              class="bg-transparent border-none text-xs font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-0 cursor-pointer"
+            >
+              <option value="todos">Todos los Cajeros (Concentrado General)</option>
+              <option v-for="c in cajeros" :key="c.id" :value="c.id">
+                {{ c.nombre }} ({{ c.rol }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Date Filter -->
+          <div class="flex items-center gap-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl border border-gray-100 dark:border-gray-700 shadow-theme-xs max-w-xs">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <flat-pickr
+              v-model="selectedDate"
+              :config="dateConfig"
+              class="bg-transparent border-none text-sm font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-0 cursor-pointer w-28 text-center"
+              placeholder="Seleccionar fecha"
+            />
+          </div>
         </div>
       </div>
 
@@ -83,15 +99,15 @@
         <div class="rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-white/[0.01] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 class="text-lg font-bold text-gray-800 dark:text-white">Ingreso Neto Total</h2>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Suma total de ingresos recaudados en este día (excluye cancelados/devueltos)</p>
           </div>
           <h1 class="text-3xl font-black text-emerald-600 dark:text-emerald-400">{{ formatCurrency(resumen.total) }} MXN</h1>
         </div>
 
         <!-- Detalle de Movimientos / Ventas -->
         <div class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-theme-sm overflow-hidden">
-          <div class="p-5 border-b border-gray-50 dark:border-gray-700">
+          <div class="p-5 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center">
             <h2 class="text-base font-bold text-gray-800 dark:text-white">Ventas del Día</h2>
+            <span class="text-xs text-gray-400 font-semibold">{{ ventas.length }} movimiento(s)</span>
           </div>
           
           <div class="overflow-x-auto">
@@ -100,6 +116,7 @@
                 <tr class="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                   <th class="px-5 py-3 text-left"><span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Orden</span></th>
                   <th class="px-5 py-3 text-left"><span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Cliente</span></th>
+                  <th class="px-5 py-3 text-left"><span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Atendió / Cajero</span></th>
                   <th class="px-5 py-3 text-left"><span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Método de Pago</span></th>
                   <th class="px-5 py-3 text-left"><span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Procedencia</span></th>
                   <th class="px-5 py-3 text-right"><span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total</span></th>
@@ -108,8 +125,8 @@
               </thead>
               <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                 <tr v-if="!ventas.length">
-                  <td colspan="6" class="px-5 py-8 text-center text-gray-400 dark:text-gray-500">
-                    No se registraron ventas en este día.
+                  <td colspan="7" class="px-5 py-8 text-center text-gray-400 dark:text-gray-500">
+                    No se registraron ventas en este día o para el filtro seleccionado.
                   </td>
                 </tr>
                 <tr v-for="venta in ventas" :key="venta.id" class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
@@ -120,6 +137,12 @@
                   </td>
                   <td class="px-5 py-4">
                     <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ venta.nombre }}</span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 px-2.5 py-1 rounded-lg">
+                      <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                      {{ venta.cajero }}
+                    </span>
                   </td>
                   <td class="px-5 py-4">
                     <span class="text-sm text-gray-500 dark:text-gray-400">{{ venta.metodo_pago }}</span>
@@ -157,6 +180,9 @@ import flatPickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
 import { Spanish } from 'flatpickr/dist/l10n/es.js'
 import axios from 'axios'
+import { useAuth } from '@/composables/useAuth'
+
+const { token } = useAuth()
 
 // Configuración de fecha por defecto (Hoy)
 const getTodayDateString = () => {
@@ -166,6 +192,9 @@ const getTodayDateString = () => {
 }
 
 const selectedDate = ref(getTodayDateString())
+const selectedCajero = ref('todos')
+const esAdmin = ref(false)
+const cajeros = ref([])
 const loading = ref(true)
 
 const dateConfig = {
@@ -191,9 +220,19 @@ const fetchCorte = async () => {
   loading.value = true
   try {
     const API_URL = import.meta.env.VITE_API_URL || ''
-    const res = await axios.get(`${API_URL}/api/corte?fecha=${selectedDate.value}`)
-    resumen.value = res.data.resumen
-    ventas.value = res.data.ventas
+    const headers = token.value ? { Authorization: `Bearer ${token.value}` } : {}
+    
+    let url = `${API_URL}/api/corte?fecha=${selectedDate.value}`
+    if (selectedCajero.value && selectedCajero.value !== 'todos') {
+      url += `&cajero_id=${selectedCajero.value}`
+    }
+
+    const res = await axios.get(url, { headers })
+    
+    esAdmin.value = res.data.es_admin || false
+    cajeros.value = res.data.cajeros || []
+    resumen.value = res.data.resumen || { efectivo: 0, tarjetas: 0, transferencias: 0, sitio_web: 0, total: 0 }
+    ventas.value = res.data.ventas || []
   } catch (error) {
     console.error('Error fetching corte:', error)
   } finally {
@@ -214,6 +253,6 @@ const formatTime = (isoString) => {
   return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
 }
 
-watch(selectedDate, fetchCorte)
+watch([selectedDate, selectedCajero], fetchCorte)
 onMounted(fetchCorte)
 </script>

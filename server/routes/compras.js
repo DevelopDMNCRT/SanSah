@@ -21,6 +21,31 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/compras/proveedores — Obtener lista de proveedores únicos guardados en compras
+router.get('/proveedores', async (req, res) => {
+  try {
+    const proveedores = await prisma.compra.findMany({
+      select: {
+        proveedor: true
+      },
+      distinct: ['proveedor']
+    });
+
+    const lista = proveedores
+      .map(p => p.proveedor ? p.proveedor.trim() : '')
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+
+    // Eliminar duplicados case-insensitive manteniendo la versión con mejor formato
+    const unicos = Array.from(new Set(lista));
+
+    res.json(unicos);
+  } catch (error) {
+    console.error('Error en GET /api/compras/proveedores:', error);
+    res.status(500).json({ error: 'Error al obtener la lista de proveedores' });
+  }
+});
+
 // GET /api/compras/:id — Obtener detalle de una compra
 router.get('/:id', async (req, res) => {
   try {

@@ -365,6 +365,9 @@ import AdminLayout from '@/components/layout/AdminLayout.vue';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { SANSAH_LOGO_B64, SANSAH_COLORS } from '@/utils/pdfBrand';
+import { useAuth } from '@/composables/useAuth';
+
+const { token } = useAuth();
 
 const productos = ref<any[]>([]);
 const loading = ref(true);
@@ -634,9 +637,14 @@ const processPayment = async () => {
     };
 
     const API_URL = import.meta.env.VITE_API_URL || '';
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token.value) {
+      headers['Authorization'] = `Bearer ${token.value}`;
+    }
+
     const res = await fetch(`${API_URL}/api/pedidos`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload)
     });
 

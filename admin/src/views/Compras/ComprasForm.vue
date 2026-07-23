@@ -5,7 +5,6 @@
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-xl font-bold text-gray-800 dark:text-white/90">Registrar Nueva Compra</h1>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Ingresa los datos de la factura y los productos para sumar al inventario</p>
         </div>
         <router-link to="/compras" class="px-4 py-2 text-sm font-semibold border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
           Cancelar
@@ -27,14 +26,33 @@
             />
           </div>
 
-          <div>
+          <div class="relative">
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Proveedor <span class="text-error-500">*</span></label>
             <input
               v-model="formData.proveedor"
               type="text"
               placeholder="Ej. Distribuidora del Norte"
+              @focus="showProveedorDropdown = true"
+              @blur="onProveedorBlur"
               class="w-full h-10 rounded-xl border border-gray-300 dark:border-gray-700 bg-transparent px-4 text-sm text-gray-900 dark:text-white focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             />
+            
+            <!-- Dropdown de Proveedores Existentes -->
+            <div
+              v-if="showProveedorDropdown && filteredProveedores.length"
+              class="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl z-50 divide-y divide-gray-100 dark:divide-gray-800"
+            >
+              <button
+                v-for="prov in filteredProveedores"
+                :key="prov"
+                type="button"
+                @mousedown="selectProveedor(prov)"
+                class="w-full text-left px-4 py-2.5 text-xs text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-brand-500/10 hover:text-brand-600 dark:hover:text-brand-400 font-semibold transition-colors flex items-center justify-between"
+              >
+                <span>{{ prov }}</span>
+                <span class="text-[10px] text-gray-400 font-normal">Registrado</span>
+              </button>
+            </div>
           </div>
 
           <div>
@@ -329,8 +347,27 @@ const formData = reactive({
 const catalogProducts = ref([])
 const textCategorias = ref([])
 const categorias = ref([])
+const proveedoresExistentes = ref([])
+const showProveedorDropdown = ref(false)
 const loading = ref(true)
 const submitting = ref(false)
+
+const filteredProveedores = computed(() => {
+  const q = (formData.proveedor || '').trim().toLowerCase()
+  if (!q) return proveedoresExistentes.value
+  return proveedoresExistentes.value.filter(p => p.toLowerCase().includes(q))
+})
+
+const selectProveedor = (name) => {
+  formData.proveedor = name
+  showProveedorDropdown.value = false
+}
+
+const onProveedorBlur = () => {
+  setTimeout(() => {
+    showProveedorDropdown.value = false
+  }, 200)
+}
 
 const activeRowIndex = ref(null)
 
@@ -358,6 +395,10 @@ const fetchInitialData = async () => {
     // Fetch categories
     const catRes = await axios.get(`${API_URL}/api/categorias`)
     categorias.value = catRes.data
+
+    // Fetch suppliers list
+    const provRes = await axios.get(`${API_URL}/api/compras/proveedores`)
+    proveedoresExistentes.value = provRes.data
 
   } catch (error) {
     console.error('Error fetching initial data for compras:', error)

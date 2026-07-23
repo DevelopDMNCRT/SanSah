@@ -4,6 +4,9 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { sendEmail } = require('../utils/email');
 
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'y0uR_SuP3r_s3cR3t_jWt_K3y_2026_SanSah';
+
 // Genera un código único de 5 caracteres alfanuméricos para nuevos clientes
 async function generarCodigo() {
   let codigo, existe = true;
@@ -61,6 +64,19 @@ router.post('/', async (req, res) => {
       envio, total, items, metodo_pago, canal_venta, estado 
     } = req.body;
 
+    let usuario_id = req.body.usuario_id || req.body.usuarioId || null;
+    if (!usuario_id && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      try {
+        const token = req.headers.authorization.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded && decoded.id) {
+          usuario_id = decoded.id;
+        }
+      } catch (e) {
+        // Ignorar error si el token es inválido o no aplica
+      }
+    }
+
     const nombreReal = nombre || 'Cliente Mostrador';
     let cliente = null;
 
@@ -89,6 +105,7 @@ router.post('/', async (req, res) => {
         data: {
           orden,
           cliente_id: cliente.id,
+          usuario_id: usuario_id ? parseInt(usuario_id) : null,
           nombre: nombreReal,
           correo: emailReal,
           telefono: telefono || null,

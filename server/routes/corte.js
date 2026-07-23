@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { requireAuth } = require('./auth');
 
 // GET /api/corte — Obtener el corte de caja de un día específico
-router.get('/', async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
-    const { fecha } = req.query; // Formato YYYY-MM-DD
+    const { fecha, cajero_id } = req.query; // Formato YYYY-MM-DD
     if (!fecha) {
       return res.status(400).json({ error: 'Falta el parámetro fecha (YYYY-MM-DD)' });
     }
@@ -14,24 +15,58 @@ router.get('/', async (req, res) => {
     const start = new Date(fecha + 'T00:00:00.000');
     const end = new Date(fecha + 'T23:59:59.999');
 
-    // Obtener pedidos del día que no estén cancelados
-    const pedidos = await prisma.pedido.findMany({
-      where: {
-        created_at: {
-          gte: start,
-          lte: end
-        },
-        estado: {
-          notIn: ['Cancelado', 'Devuelto']
-        }
+    const isUserAdmin = (req.user && req.user.rol === 'Administrador');
+
+    // Construir filtro de búsqueda
+    const whereClause = {
+      created_at: {
+        gte: start,
+        lte: end
       },
+      estado: {
+        notIn: ['Cancelado', 'Devuelto']
+      }
+    };
+
+    // Si NO es Admin (es Operativo), solo ve sus propios movimientos
+    if (!isUserAdmin) {
+      whereClause.usuario_id = req.user.id;
+    } else if (cajero_id && cajero_id !== 'todos') {
+      // Si es Admin y filtró por un cajero específico
+      whereClause.usuario_id = parseInt(cajero_id);
+    }
+
+    // Obtener pedidos del día
+    const pedidos = await prisma.pedido.findMany({
+      where: whereClause,
       include: {
-        items: true
+        items: true,
+        usuario: {
+          select: {
+            id: true,
+            nombre: true
+          }
+        }
       },
       orderBy: {
         created_at: 'desc'
       }
     });
+
+    // Si es admin, obtenemos la lista de usuarios/cajeros registrados para el dropdown
+    let cajerosList = [];
+    if (isUserAdmin) {
+      cajerosList = await prisma.user.findMany({
+        select: {
+          id: true,
+          nombre: true,
+          rol: true
+        },
+        orderBy: {
+          nombre: 'asc'
+        }
+      });
+    }
 
     let tarjetas = 0;
     let transferencias = 0;
@@ -50,8 +85,6 @@ router.get('/', async (req, res) => {
         } else if (metodo.includes('efectivo') || metodo.includes('efe')) {
           efectivo += p.total;
         } else {
-          // Por defecto si no coincide lo catalogamos en efectivo o tarjetas, o podemos crear un fallback.
-          // Digamos efectivo para evitar pérdidas
           efectivo += p.total;
         }
       }
@@ -60,6 +93,8 @@ router.get('/', async (req, res) => {
     const total = tarjetas + transferencias + efectivo + sitio_web;
 
     res.json({
+      es_admin: isUserAdmin,
+      cajeros: cajerosList,
       resumen: {
         tarjetas,
         transferencias,
@@ -73,6 +108,7 @@ router.get('/', async (req, res) => {
         nombre: p.nombre,
         metodo_pago: p.metodo_pago,
         canal_venta: p.canal_venta,
+        cajero: p.usuario ? p.usuario.nombre : 'Venta General',
         total: p.total,
         created_at: p.created_at,
         taller: p.items.some(item => (item.nombre || '').startsWith('Servicio:'))

@@ -17,6 +17,7 @@ model User {
   correo     String   @unique
   password   String
   rol        String   @default("Operativo")
+  pedidos    Pedido[]
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -100,6 +101,7 @@ model Pedido {
   id         Int          @id @default(autoincrement())
   orden      String       @unique           // Número visible, ej "ORD-1001"
   cliente_id Int?
+  usuario_id Int?
   nombre     String                         // Nombre del comprador (desnormalizado)
   correo     String                         // Correo del comprador
   telefono   String?
@@ -113,6 +115,7 @@ model Pedido {
   canal_venta String       @default("Tienda en Línea")   // Tienda en Línea | POS
   items       PedidoItem[]
   cliente     Cliente?     @relation(fields: [cliente_id], references: [id], onDelete: SetNull)
+  usuario     User?        @relation(fields: [usuario_id], references: [id], onDelete: SetNull)
   created_at  DateTime     @default(now())
   updated_at  DateTime     @updatedAt
 

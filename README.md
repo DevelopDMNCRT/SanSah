@@ -123,9 +123,7 @@ Para iniciar sesión en el panel `/admin`, el endpoint permite credenciales flex
 
 ---
 
-## ✨ Últimas Funcionalidades Implementadas
-
-A continuación se detallan las mejoras clave agregadas recientemente al proyecto:
+## ✨ Historial de Funcionalidades Implementadas
 
 *   **📅 Corte Diario Dinámico:** Creación de la sección **Corte** en el panel de administrador. Muestra ingresos en tiempo real agrupados por *Tarjetas*, *Transferencias*, *Efectivo* y *Sitio Web*, con opción de filtrado para seleccionar fechas exactas.
 *   **🧾 Gestión de Compras/Facturas:** Módulo para el registro de compras, ingresando el proveedor, número de factura, forma de pago y fecha. Cuenta con buscador de productos inteligente por autocompletado y un visualizador de detalles mediante un botón con icono de lápiz.
@@ -137,4 +135,13 @@ A continuación se detallan las mejoras clave agregadas recientemente al proyect
 *   **🔓 Devoluciones Simplificadas:** Modificación del modal de confirmación de devolución de un pedido para que no requiera ingresar la contraseña del administrador, facilitando un flujo operativo rápido.
 *   **🔑 Login con credenciales flexibles:** Capacidad de iniciar sesión tanto con el correo electrónico como con el nombre del usuario (insensible a mayúsculas/minúsculas) o el prefijo de email antes del `@`.
 *   **🗺️ Barra Lateral Personalizada:** Reordenamiento estético y funcional del menú de navegación del panel administrativo de acuerdo a la prioridad del negocio.
+
+### 📅 23 de Julio de 2026
+*   **🏢 Base de Proveedores Autocompletable:**
+    *   Endpoint dedicado `GET /api/compras/proveedores` que extrae dinámicamente la lista de nombres de proveedores únicos guardados históricamente en compras.
+    *   Input buscador en el formulario de compras (`ComprasForm.vue`) con sugerencias desplegables al teclear para evitar la duplicación de registros (ej. evitar variaciones como "Bicimex" vs "Bicimex S.A.") y soporte para registrar nuevos proveedores de forma transparente.
+*   **👥 Corte de Caja por Cajero y Rol (Operativo vs Admin):**
+    *   Asociación del campo `usuario_id` en el modelo `Pedido`, registrando el usuario/cajero que atiende y cobra cada orden en el POS o sistema.
+    *   **Permisos y Restricciones:** El backend filtra estrictamente el corte de caja de modo que los usuarios con rol **Operativo** solo puedan visualizar sus propios movimientos del día. Los usuarios con rol **Administrador** pueden alternar entre un **Concentrado General** de todas las cajas o seleccionar y auditar el corte individual de cualquier cajero específico.
+    *   Visualización mejorada en `CorteView.vue` incluyendo la columna *"Atendió / Cajero"* y selector dinámico de empleados para administradores.
 
